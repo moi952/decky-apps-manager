@@ -12,15 +12,13 @@ Apps Manager keeps track of every Flatpak app you have installed (including the 
 
 ### ✨ New in 0.1.0
 
-- Lists every installed Flatpak app (system-wide and per-user) and every Gearlever-managed AppImage, flagging which ones have an update
-- **Search and install a new Flatpak** from Flathub or any other remote you've configured, right from the panel
-- **Search and install a new AppImage** from the [AppImageHub](https://appimage.github.io/) community catalog, with screenshots — Gearlever's own update source (GitHub/GitLab/Codeberg/Forgejo) is configured for you automatically whenever the project publishes one
-- **Remove a Flatpak app or an AppImage**, with a confirmation step first
-- **Update all** apps at once (with a confirmation prompt), or update a single one from its own page
-- **Exclude apps** you don't want to be nagged about — a dedicated page lists them, with a one-tap way to bring one back
-- Sort your app list the way you want — updates first (the default), or alphabetically
-- A background check notifies you when updates are available, even if you never open the panel — and you control how often re-opening the panel itself re-checks, from a always/30min/1h/2h/4h/6h/12h setting
-- If Gearlever isn't installed yet, offers to install it for you in one tap
+- First release
+- Track your Flatpak apps and Gearlever AppImages, with updates flagged automatically
+- Search and install new Flatpaks and AppImages, screenshots included
+- Update everything at once or one app at a time
+- Exclude apps you don't want to be nagged about
+- Sort your list — updates first, or alphabetically
+- Choose how often the panel re-checks for updates on its own
 
 ---
 

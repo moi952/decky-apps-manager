@@ -1,7 +1,7 @@
 {
   "name": "Apps Manager",
   "author": "moi952",
-  "version": "0.0.9",
+  "version": "0.1.0",
   "flags": [
     "debug",
     "root"

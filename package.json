@@ -1,6 +1,6 @@
 {
   "name": "decky-apps-manager",
-  "version": "0.0.9",
+  "version": "0.1.0",
   "display_name": "Apps Manager",
   "description": "Check for and apply updates to your Flatpak apps (including ones installed via Discover) and Gearlever-managed AppImages, and discover/install new ones from either — all from Steam's Quick Access menu.",
   "type": "module",
