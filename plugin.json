@@ -1,0 +1,19 @@
+{
+  "name": "Apps Manager",
+  "author": "moi952",
+  "version": "0.0.9",
+  "flags": [
+    "debug",
+    "root"
+  ],
+  "api_version": 1,
+  "publish": {
+    "tags": [
+      "flatpak",
+      "appimage",
+      "updates"
+    ],
+    "description": "Check for and apply updates to your Flatpak apps (including ones installed via Discover) and Gearlever-managed AppImages, and discover/install new ones from either — all from Steam's Quick Access menu.",
+    "image": "https://raw.githubusercontent.com/moi952/decky-apps-manager/main/assets/logo.png"
+  }
+}
