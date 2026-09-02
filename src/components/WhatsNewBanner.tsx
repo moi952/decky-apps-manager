@@ -8,7 +8,13 @@ import { WhatsNewCard } from "./WhatsNewCard";
 
 const versionKey = (version: string) => `v${version.replace(/\./g, "_")}`;
 
-export const WhatsNewBanner: React.FC = () => {
+interface WhatsNewBannerProps {
+  onFeatureRequest: () => void;
+}
+
+export const WhatsNewBanner: React.FC<WhatsNewBannerProps> = ({
+  onFeatureRequest,
+}) => {
   const { t } = useTranslation("whats_new");
   const { currentVersion, visible, dismiss } = useWhatsNew();
 
@@ -25,6 +31,7 @@ export const WhatsNewBanner: React.FC = () => {
         initialVersionKey={key}
         dismissLabel={t("dismiss")}
         onDismiss={dismiss}
+        onFeatureRequest={onFeatureRequest}
       />
     </div>
   );

@@ -28,6 +28,18 @@ export const sortApps = (
 export const minutesUntil = (untilMs: number): number =>
   Math.max(1, Math.ceil((untilMs - Date.now()) / 60_000));
 
+// Every date/time shown anywhere in the plugin goes through one of these
+// two — always passed the caller's own resolved i18n.language (which
+// already follows the system's, see i18n/translations.ts) rather than
+// the JS engine's own implicit default locale, so 12h/24h and date
+// order actually match the user's own language instead of a fixed
+// fallback (see UpdateAllBar.tsx's original bug report on this).
+export const formatTime = (ms: number, locale: string): string =>
+  new Date(ms).toLocaleTimeString(locale);
+
+export const formatDateTime = (ms: number, locale: string): string =>
+  new Date(ms).toLocaleString(locale);
+
 export const copy = async (text: string) => {
   try {
     const tempInput = document.createElement("input");

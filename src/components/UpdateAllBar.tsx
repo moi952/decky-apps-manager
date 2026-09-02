@@ -5,11 +5,12 @@ import { FiRefreshCw } from "react-icons/fi";
 import { useTranslation } from "react-i18next";
 
 import { useApps } from "../context/AppsContext";
+import { formatTime } from "../utils/functions";
 
 import { InlineConfirm } from "./InlineConfirm";
 
 export const UpdateAllBar: React.FC = () => {
-  const { t } = useTranslation("apps_view");
+  const { t, i18n } = useTranslation("apps_view");
   const {
     flatpakApps,
     gearleverApps,
@@ -27,7 +28,7 @@ export const UpdateAllBar: React.FC = () => {
   ).length;
 
   const lastCheckedLabel = lastCheckedAt
-    ? new Date(lastCheckedAt).toLocaleTimeString()
+    ? formatTime(lastCheckedAt, i18n.language)
     : t("never_checked");
 
   return (

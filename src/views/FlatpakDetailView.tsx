@@ -14,6 +14,8 @@ import {
   FiEye,
   FiEyeOff,
   FiHash,
+  FiPause,
+  FiRefreshCw,
   FiServer,
   FiTag,
   FiTrash2,
@@ -39,6 +41,7 @@ interface FlatpakDetailViewProps {
   onUpdate: () => Promise<boolean>;
   onUninstall: () => Promise<boolean>;
   onToggleExclude: () => void;
+  onToggleAutoUpdateSkip: () => void;
 }
 
 type Busy = "updating" | "removing" | null;
@@ -58,6 +61,7 @@ export const FlatpakDetailView: React.FC<FlatpakDetailViewProps> = ({
   onUpdate,
   onUninstall,
   onToggleExclude,
+  onToggleAutoUpdateSkip,
 }) => {
   const { t } = useTranslation("flatpak_detail_view");
   const { t: tApps } = useTranslation("apps_view");
@@ -111,18 +115,18 @@ export const FlatpakDetailView: React.FC<FlatpakDetailViewProps> = ({
     { icon: <FiTag size={13} />, label: t("info_version"), value: app.version ?? "—" },
     ...(app.has_update
       ? [
-          {
-            icon: <FiUpload size={13} />,
-            label: t("info_available_version"),
-            // See AppRow.tsx's own note — a same-looking version can still
-            // mean "an update exists" (commit-level change only).
-            value:
+        {
+          icon: <FiUpload size={13} />,
+          label: t("info_available_version"),
+          // See AppRow.tsx's own note — a same-looking version can still
+          // mean "an update exists" (commit-level change only).
+          value:
               app.available_version && app.available_version !== app.version
                 ? app.available_version
                 : tApps("update_available"),
-            accent: "#4caf50",
-          },
-        ]
+          accent: "#4caf50",
+        },
+      ]
       : []),
     {
       icon: <FiServer size={13} />,
@@ -180,46 +184,49 @@ export const FlatpakDetailView: React.FC<FlatpakDetailViewProps> = ({
           </div>
         )}
 
-        {confirmingRemove ? (
-          <div style={{ marginTop: 16 }}>
-            <InlineConfirm
-              description={t("remove_confirm_description", { name: app.name })}
-              confirmLabel={t("remove")}
-              variant="danger"
-              onCancel={() => setConfirmingRemove(false)}
-              onConfirm={runUninstall}
-            />
-          </div>
-        ) : (
-          <Focusable
-            style={{ display: "flex", gap: 8, width: "100%", marginTop: 16 }}
-            flow-children="horizontal"
+        <div style={{ marginTop: 16 }}>
+          <ActionButton
+            width="100%"
+            disabled={!app.has_update || !!busy}
+            onClick={runUpdate}
           >
-            <div style={{ flex: 1 }}>
-              <ActionButton
-                width="100%"
-                disabled={!app.has_update || !!busy}
-                onClick={runUpdate}
+            {busy === "updating"
+              ? tApps("updating")
+              : app.has_update
+                ? tApps("update")
+                : tApps("already_up_to_date")}
+          </ActionButton>
+        </div>
+
+        <Focusable
+          style={{ display: "flex", gap: 8, width: "100%", marginTop: 8 }}
+          flow-children="horizontal"
+        >
+          <div style={{ flex: 1 }}>
+            <ActionButton width="100%" onClick={onToggleExclude} disabled={!!busy}>
+              <div
+                style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}
               >
-                {busy === "updating"
-                  ? tApps("updating")
-                  : app.has_update
-                    ? tApps("update")
-                    : tApps("already_up_to_date")}
-              </ActionButton>
-            </div>
-            <ActionButton onClick={onToggleExclude} disabled={!!busy}>
-              {app.excluded ? <FiEye size={14} /> : <FiEyeOff size={14} />}
+                {app.excluded ? <FiEyeOff size={14} /> : <FiEye size={14} />}
+                <span>{app.excluded ? tApps("follow_button") : tApps("ignore_button")}</span>
+              </div>
             </ActionButton>
-            <ActionButton
-              variant="danger"
-              disabled={!!busy}
-              onClick={() => setConfirmingRemove(true)}
-            >
-              {busy === "removing" ? t("removing") : <FiTrash2 size={14} />}
+          </div>
+          <div style={{ flex: 1 }}>
+            <ActionButton width="100%" onClick={onToggleAutoUpdateSkip} disabled={!!busy}>
+              <div
+                style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}
+              >
+                {app.auto_update_skipped ? <FiPause size={14} /> : <FiRefreshCw size={14} />}
+                <span>
+                  {app.auto_update_skipped
+                    ? tApps("auto_update_unskip_button")
+                    : tApps("auto_update_skip_button")}
+                </span>
+              </div>
             </ActionButton>
-          </Focusable>
-        )}
+          </div>
+        </Focusable>
 
         {result && (
           <div style={{ marginTop: 12 }}>
@@ -247,6 +254,37 @@ export const FlatpakDetailView: React.FC<FlatpakDetailViewProps> = ({
                 }
               />
             )}
+          </div>
+        )}
+
+        {confirmingRemove ? (
+          <div style={{ marginTop: 16 }}>
+            <InlineConfirm
+              description={t("remove_confirm_description", { name: app.name })}
+              confirmLabel={t("remove")}
+              variant="danger"
+              onCancel={() => setConfirmingRemove(false)}
+              onConfirm={runUninstall}
+            />
+          </div>
+        ) : (
+          <div style={{ marginTop: 16 }}>
+            <ActionButton
+              variant="danger"
+              size="large"
+              width="100%"
+              disabled={!!busy}
+              onClick={() => setConfirmingRemove(true)}
+            >
+              {busy === "removing" ? (
+                t("removing")
+              ) : (
+                <>
+                  <FiTrash2 size={16} style={{ marginRight: 6 }} />
+                  {t("remove")}
+                </>
+              )}
+            </ActionButton>
           </div>
         )}
       </PanelSectionCustom>

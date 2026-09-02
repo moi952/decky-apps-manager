@@ -17,7 +17,8 @@ StaticFileUpdater has no such API (a plain URL carries no version) and
 is intentionally not covered — resolve_available_version returns nothing
 useful for it, same as for an unrecognized/unconfigured manager.
 """
-from typing import Any, Dict, Optional
+import fnmatch
+from typing import Any, Dict, List, Optional
 from urllib.parse import quote, urlsplit
 
 import decky
@@ -176,6 +177,51 @@ _RESOLVERS = {
     "CodebergUpdater": _codeberg,
     "ForgejoUpdater": _forgejo,
 }
+
+
+async def list_github_versions(config: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """Every non-draft GitHub release whose assets include one matching
+    this app's own configured repo_filename fnmatch pattern (the same
+    pattern GithubUpdater itself uses to find its target asset, and the
+    same one appimage_catalog.install() derives for a fresh install) —
+    lets a caller offer switching to any of these, not just the latest.
+    GithubUpdater only for now: GitLab/Codeberg/Forgejo would need this
+    same treatment added to their own resolvers in _RESOLVERS above."""
+    pair = _repo_pair(str(config.get("repo", "")))
+    pattern = str(config.get("repo_filename", ""))
+    if not pair or not pattern:
+        return []
+    repo = "/".join(pair)
+    releases = await http_json.get_json(
+        f"https://api.github.com/repos/{repo}/releases", _GITHUB_HEADERS
+    )
+    results: List[Dict[str, Any]] = []
+    for release in releases or []:
+        if release.get("draft"):
+            continue
+        tag = release.get("tag_name")
+        if not tag:
+            continue
+        asset = next(
+            (
+                a for a in release.get("assets") or []
+                if fnmatch.fnmatch(str(a.get("name") or ""), pattern)
+            ),
+            None,
+        )
+        if not asset:
+            continue
+        url = asset.get("browser_download_url")
+        if not url:
+            continue
+        results.append({
+            "tag": tag,
+            "version": _strip_v(tag),
+            "url": url,
+            "filename": asset.get("name"),
+            "prerelease": bool(release.get("prerelease")),
+        })
+    return results
 
 
 async def resolve_available_version(

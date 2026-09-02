@@ -1,9 +1,17 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { ProgressBarWithInfo } from "@decky/ui";
 import { call, toaster } from "@decky/api";
 import { ActionButton } from "@moi952/decky-ui-kit";
 import { useTranslation } from "react-i18next";
 
 import { useApps } from "../context/AppsContext";
+
+// How often we poll the backend for "is an install still running?" after
+// finding one already in progress on mount (see the effect below) — no
+// push event exists for this, so a plain poll is the simplest option for
+// a rare, bounded-duration situation (install_gearlever() times out well
+// under a minute either way).
+const INSTALLING_POLL_MS = 2000;
 
 interface GearleverNoticeProps {
   // null = not checked yet — must be treated the same as "installed",
@@ -19,10 +27,44 @@ export const GearleverNotice: React.FC<GearleverNoticeProps> = ({
   const { refresh } = useApps();
   const [seen, setSeen] = useState(true);
   const [installing, setInstalling] = useState(false);
+  // Closing/reopening the QAM tears down and recreates this whole
+  // component — `installing` above would silently reset to false even
+  // though a backend install can still be running underneath. `refresh`
+  // itself is recreated on every check (see AppsContext), so it's read
+  // through a ref rather than added to the mount effect's own deps below,
+  // which would otherwise re-run (and restart the poll) constantly.
+  const refreshRef = useRef(refresh);
+  refreshRef.current = refresh;
 
   useEffect(() => {
     if (installed !== false) return;
-    call<[], boolean>("get_gearlever_notice_seen").then(setSeen);
+    let cancelled = false;
+    let pollId: ReturnType<typeof setInterval> | undefined;
+
+    call<[], boolean>("get_gearlever_notice_seen").then((s) => {
+      if (!cancelled) setSeen(s);
+    });
+
+    call<[], boolean>("is_gearlever_installing").then((busy) => {
+      if (cancelled) return;
+      setInstalling(busy);
+      if (!busy) return;
+      pollId = setInterval(async () => {
+        const stillBusy = await call<[], boolean>("is_gearlever_installing");
+        if (cancelled || stillBusy) return;
+        if (pollId) clearInterval(pollId);
+        setInstalling(false);
+        await refreshRef.current();
+        call<[], boolean>("get_gearlever_notice_seen").then((s) => {
+          if (!cancelled) setSeen(s);
+        });
+      }, INSTALLING_POLL_MS);
+    });
+
+    return () => {
+      cancelled = true;
+      if (pollId) clearInterval(pollId);
+    };
   }, [installed]);
 
   if (installed !== false || seen) return null;
@@ -65,6 +107,17 @@ export const GearleverNotice: React.FC<GearleverNoticeProps> = ({
       <div style={{ marginBottom: 8, color: "#9aa1a8" }}>
         {t("gearlever_notice_body")}
       </div>
+      {installing && (
+        <div style={{ marginBottom: 8 }}>
+          <ProgressBarWithInfo
+            layout="inline"
+            bottomSeparator="none"
+            indeterminate
+            nProgress={0}
+            sOperationText={t("installing")}
+          />
+        </div>
+      )}
       <div style={{ display: "flex", gap: 8 }}>
         <ActionButton size="small" onClick={install} disabled={installing}>
           {installing ? t("installing") : t("install_gearlever")}

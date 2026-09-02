@@ -34,7 +34,8 @@ const MIN_QUERY_LENGTH = 2;
 
 export const AppImageSearchView: React.FC<AppImageSearchViewProps> = ({ onBack }) => {
   const { t } = useTranslation("appimage_catalog_view");
-  const { gearleverApps, updateApp, uninstallApp, toggleExcluded } = useApps();
+  const { gearleverApps, updateApp, uninstallApp, toggleExcluded, toggleAutoUpdateSkip } =
+    useApps();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<AppImageCatalogEntry[]>([]);
   const [searching, setSearching] = useState(false);
@@ -105,6 +106,7 @@ export const AppImageSearchView: React.FC<AppImageSearchViewProps> = ({ onBack }
           onUpdate={() => updateApp(installedApp.id)}
           onUninstall={() => uninstallApp(installedApp.id)}
           onToggleExclude={() => toggleExcluded(installedApp.id)}
+          onToggleAutoUpdateSkip={() => toggleAutoUpdateSkip(installedApp.id)}
         />
       );
     }

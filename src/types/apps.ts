@@ -8,6 +8,9 @@ export interface AppEntry {
   available_version: string | null;
   has_update: boolean;
   excluded: boolean;
+  // Stays visible/notified about, but the auto-update loop won't touch
+  // it on its own — distinct from `excluded`, which hides it entirely.
+  auto_update_skipped: boolean;
   // flatpak only
   app_id?: string;
   scope?: "system" | "user";
@@ -40,8 +43,40 @@ export interface AppsListResponse {
   github_rate_limited_until: number | null;
   checked_at: number; // unix seconds
   from_cache: boolean;
+  // False when this response is the existing cache served untouched
+  // because the backend had no connectivity to run a real check (e.g.
+  // right after boot, before Wi-Fi reconnects) — see apps_service.py's
+  // own note on why a failed check must never overwrite a good cache
+  // with a false "nothing has an update" result.
+  network_available?: boolean;
 }
 
 export type AppRowStatus = "idle" | "updating" | "done" | "error";
 
 export type UpdateAppResult = "updated" | "already_up_to_date" | "error";
+
+export interface AutoUpdateHistoryAppSummary {
+  id: string;
+  name: string;
+  kind: AppKind;
+}
+
+// One past run of the background auto-update loop — kept as a permanent
+// (capped) log independent of the toast fired alongside it, since that
+// toast can easily go unseen (the loop runs while the panel is closed).
+export interface AutoUpdateHistoryEntry {
+  timestamp: number; // unix seconds
+  apps: AutoUpdateHistoryAppSummary[];
+  ok: boolean;
+}
+
+// One GitHub release whose assets include one matching the app's own
+// configured repo_filename pattern — GithubUpdater only for now (see
+// AppImageDetailView's own note on why).
+export interface AppImageVersionOption {
+  tag: string;
+  version: string;
+  url: string;
+  filename: string;
+  prerelease: boolean;
+}

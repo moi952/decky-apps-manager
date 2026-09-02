@@ -35,7 +35,8 @@ const MIN_QUERY_LENGTH = 2;
 
 export const FlatpakSearchView: React.FC<FlatpakSearchViewProps> = ({ onBack }) => {
   const { t } = useTranslation("flatpak_catalog_view");
-  const { flatpakApps, updateApp, uninstallApp, toggleExcluded } = useApps();
+  const { flatpakApps, updateApp, uninstallApp, toggleExcluded, toggleAutoUpdateSkip } =
+    useApps();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<FlatpakCatalogEntry[]>([]);
   const [searching, setSearching] = useState(false);
@@ -89,6 +90,7 @@ export const FlatpakSearchView: React.FC<FlatpakSearchViewProps> = ({ onBack }) 
           onUpdate={() => updateApp(installedApp.id)}
           onUninstall={() => uninstallApp(installedApp.id)}
           onToggleExclude={() => toggleExcluded(installedApp.id)}
+          onToggleAutoUpdateSkip={() => toggleAutoUpdateSkip(installedApp.id)}
         />
       );
     }

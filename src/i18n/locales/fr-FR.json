@@ -6,14 +6,37 @@
   "settings_view": {
     "settings": "Paramètres",
     "whats_new_history": "Historique des mises à jour",
-    "update_check_interval_label": "Revérifier les mises à jour à l'ouverture du panneau",
+    "update_check_section_title": "Vérification à l'ouverture de l'accueil",
+    "update_check_interval_label": "Fréquence de vérification",
+    "update_check_interval_description": "À quelle fréquence l'ouverture du panneau revérifie discrètement un résultat en cache, et à quelle fréquence la vérification en arrière-plan elle-même tourne.",
     "update_check_interval_always": "À chaque fois",
     "update_check_interval_30": "Toutes les 30 minutes",
     "update_check_interval_60": "Toutes les heures",
     "update_check_interval_120": "Toutes les 2 heures",
     "update_check_interval_240": "Toutes les 4 heures",
     "update_check_interval_360": "Toutes les 6 heures",
-    "update_check_interval_720": "Toutes les 12 heures"
+    "update_check_interval_720": "Toutes les 12 heures",
+    "auto_update_section_title": "Mise à jour auto",
+    "auto_update_label": "Mettre à jour automatiquement",
+    "auto_update_description": "Applique les mises à jour disponibles toute seule, selon sa propre fréquence ci-dessous. Les apps exclues restent ignorées.",
+    "auto_update_interval_label": "Fréquence de mise à jour auto",
+    "auto_update_interval_description": "À quelle fréquence les mises à jour trouvées sont réellement appliquées toute seules — indépendant de la fréquence de vérification ci-dessus.",
+    "update_toast_label": "Afficher les notifications de mise à jour",
+    "update_toast_description": "Notifications toast pour les vérifications en arrière-plan/automatiques. Les mises à jour que vous déclenchez vous-même en affichent toujours une.",
+    "auto_update_history_label": "Historique des mises à jour auto",
+    "auto_update_history_empty": "Aucune mise à jour automatique n'a encore eu lieu",
+    "auto_update_history_ok": "Réussie",
+    "auto_update_history_failed": "Certaines mises à jour ont échoué",
+    "github_section_title": "GitHub",
+    "feature_request_button": "Demander une fonctionnalité",
+    "feature_request_hint": "Scanne avec ton téléphone, ou appuie pour ouvrir dans le navigateur",
+    "bug_report_button": "Signaler un bug",
+    "bug_report_hint": "Scanne avec ton téléphone, ou appuie pour ouvrir dans le navigateur",
+    "support_section_title": "Soutien",
+    "kofi_button": "Me soutenir sur Ko-fi",
+    "kofi_hint": "Scannez avec votre téléphone, ou appuyez pour ouvrir dans le navigateur",
+    "other_plugins_section_title": "Mes autres plugins",
+    "kofi_description": "Ce plugin est gratuit et le restera. Si tu veux quand même donner un coup de pouce, chaque café compte."
   },
   "plugin_update": {
     "banner": "Mise à jour du plugin disponible : {{version}}",
@@ -50,7 +73,19 @@
         "Tri de la liste — mises à jour en premier, ou alphabétique",
         "Choix de la fréquence à laquelle le panneau revérifie les mises à jour tout seul"
       ]
-    }
+    },
+    "v0_2_0": {
+      "title": "Nouveautés de la version 0.2.0",
+      "items": [
+        "Mises à jour automatiques : laissez Apps Manager tout mettre à jour tout seul, selon la fréquence de votre choix, avec une notification optionnelle",
+        "Ignorez les mises à jour automatiques pour certaines apps sans les cacher — vous verrez toujours qu'une mise à jour est disponible, elle ne se fera juste pas toute seule",
+        "AppImages : choisissez une version précise à installer, pas seulement la dernière",
+        "Nouvelle section GitHub dans les paramètres : vérifier les mises à jour du plugin, proposer une fonctionnalité ou signaler un bug, tout au même endroit",
+        "Découvrez mes autres plugins directement depuis les paramètres, avec un signal sur l'écran d'accueil dès qu'un nouveau sort",
+        "Plusieurs corrections de fiabilité : l'état des apps se met à jour instantanément après une action, et la vérification des mises à jour ne se trompe plus quand le réseau n'est pas encore prêt"
+      ]
+    },
+    "support_note": "Si vous avez envie de soutenir le développement du plugin, c'est toujours avec plaisir — direction la section Support dans les paramètres."
   },
   "apps_view": {
     "section_label": "Mises à jour des apps",
@@ -79,13 +114,20 @@
     "dismiss_understood": "J'ai compris",
     "installing": "Installation…",
     "updates_available_toast": "{{count}} mise(s) à jour disponible(s)",
+    "auto_updated_toast": "{{count}} app(s) mise(s) à jour automatiquement",
+    "auto_update_banner_title": "{{count}} app(s) mise(s) à jour automatiquement",
+    "auto_update_banner_failed_title": "La mise à jour automatique a rencontré un problème",
     "available_version_label": "Version disponible : {{version}}",
     "update_available": "Mise à jour disponible",
     "update_done": "Mise à jour installée",
     "already_up_to_date": "Déjà à jour",
     "search": "Rechercher",
     "up_to_date": "Tout est à jour",
-    "reinclude": "Réintégrer",
+    "up_to_date_flatpak_only": "Les Flatpaks sont à jour",
+    "follow_button": "Suivre les mises à jour",
+    "ignore_button": "Ignorer les mises à jour",
+    "auto_update_skip_button": "Bloquer la MAJ automatique",
+    "auto_update_unskip_button": "Autoriser la MAJ automatique",
     "checking_updates": "Recherche de mises à jour…",
     "github_rate_limit_title": "Vérification des AppImages en pause",
     "github_rate_limit_description": "GitHub limite le nombre de vérifications anonymes. Réessayez dans {{minutes}} min."
@@ -93,7 +135,7 @@
   "all_apps_view": {
     "title": "Toutes les apps",
     "search": "Rechercher",
-    "excluded_section": "Exclues",
+    "excluded_section": "Ignorées",
     "sort_label": "Trier :",
     "sort_update_first": "Mises à jour d'abord",
     "sort_alpha_asc": "A → Z",
@@ -137,7 +179,16 @@
     "remove_confirm_description": "Supprimer {{name}} ? L'app sera complètement désinstallée.",
     "remove_success_title": "Supprimée",
     "remove_error_title": "Échec de la suppression",
-    "remove_error_description": "Vérifiez votre connexion internet et réessayez."
+    "remove_error_description": "Vérifiez votre connexion internet et réessayez.",
+    "choose_version_label": "Choisir une version",
+    "change_version": "Changer de version",
+    "loading_versions": "Chargement des versions…",
+    "no_versions_found": "Aucune version correspondante trouvée",
+    "install_version_button": "Installer {{version}}",
+    "current_version_installed": "Actuellement installée",
+    "version_install_success_title": "Version installée",
+    "version_install_error_title": "Impossible d'installer cette version",
+    "version_install_error_description": "Vérifiez votre connexion internet et réessayez."
   },
   "flatpak_detail_view": {
     "info_version": "Version",
@@ -199,5 +250,14 @@
     "appimage_title": "AppImage",
     "appimage_description": "Recherchez dans le catalogue public d'AppImageHub, installée via Gearlever.",
     "appimage_requires_gearlever": "Nécessite Gearlever — installez-le depuis l'écran d'accueil d'abord."
+  },
+  "other_plugins": {
+    "banner_title_one": "Nouveau plugin disponible !",
+    "banner_title_other": "Nouveaux plugins disponibles !",
+    "open_settings": "Aller aux paramètres",
+    "install_latest": "Installer la dernière version",
+    "installing": "Installation…",
+    "install_failed": "Impossible de récupérer la dernière version. Réessaie plus tard.",
+    "view_on_github": "Voir sur GitHub"
   }
 }

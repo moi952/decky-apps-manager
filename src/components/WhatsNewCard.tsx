@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Focusable } from "@decky/ui";
 import { ActionButton } from "@moi952/decky-ui-kit";
 import { useTranslation } from "react-i18next";
-import { FiChevronLeft, FiChevronRight, FiGift } from "react-icons/fi";
+import { FiChevronLeft, FiChevronRight, FiExternalLink, FiGift } from "react-icons/fi";
 
 import { getWhatsNewVersionKeys } from "../utils/whatsNewVersions";
 
@@ -10,6 +10,11 @@ interface WhatsNewCardProps {
   initialVersionKey?: string;
   dismissLabel?: string;
   onDismiss?: () => void;
+  // Only the home banner instance passes this — a plain button that lands
+  // on the real feature-request QR code in Settings' GitHub section
+  // (scrolled + focused, see featureRequestFocus.ts), instead of
+  // embedding a second copy of that QR code/collapse right here.
+  onFeatureRequest?: () => void;
 }
 
 // Shared by the home banner and the Settings history collapse — same
@@ -19,8 +24,10 @@ export const WhatsNewCard: React.FC<WhatsNewCardProps> = ({
   initialVersionKey,
   dismissLabel,
   onDismiss,
+  onFeatureRequest,
 }) => {
   const { t } = useTranslation("whats_new");
+  const { t: tSettings } = useTranslation("settings_view");
   const [versions] = useState(getWhatsNewVersionKeys);
   const [index, setIndex] = useState(() => {
     const i = initialVersionKey ? versions.indexOf(initialVersionKey) : 0;
@@ -105,11 +112,24 @@ export const WhatsNewCard: React.FC<WhatsNewCardProps> = ({
         </Focusable>
       )}
 
+      {onFeatureRequest && (
+        <div style={{ width: "100%", marginBottom: dismissLabel && onDismiss ? 10 : 0 }}>
+          <ActionButton onClick={onFeatureRequest} width="100%">
+            <FiExternalLink size={12} style={{ marginRight: 6 }} />
+            {tSettings("feature_request_button")}
+          </ActionButton>
+        </div>
+      )}
+
       {dismissLabel && onDismiss && (
         <ActionButton onClick={onDismiss} width="100%">
           {dismissLabel}
         </ActionButton>
       )}
+
+      <div style={{ fontSize: 10, opacity: 0.6, marginTop: 10 }}>
+        {t("support_note")}
+      </div>
     </div>
   );
 };

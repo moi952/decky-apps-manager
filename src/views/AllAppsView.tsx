@@ -15,7 +15,6 @@ import {
   APP_SECTION_HEADER_STYLES,
 } from "../components/AppSectionHeader";
 import { useApps } from "../context/AppsContext";
-import { AppEntry } from "../types/apps";
 import { AppSortMode, sortApps } from "../utils/functions";
 
 import { AppImageDetailView } from "./AppImageDetailView";
@@ -39,6 +38,7 @@ export const AllAppsView: React.FC<AllAppsViewProps> = ({ onBack }) => {
     updateApp,
     uninstallApp,
     toggleExcluded,
+    toggleAutoUpdateSkip,
     refresh,
   } = useApps();
 
@@ -47,7 +47,13 @@ export const AllAppsView: React.FC<AllAppsViewProps> = ({ onBack }) => {
   const [collapsedExcluded, setCollapsedExcluded] = useState(true);
   const [collapsedFlatpak, setCollapsedFlatpak] = useState(true);
   const [collapsedGearlever, setCollapsedGearlever] = useState(true);
-  const [viewingApp, setViewingApp] = useState<AppEntry | null>(null);
+  // Only the id is kept here — see index.tsx's own homeViewingId for why:
+  // freezing the AppEntry object itself silently broke any in-place
+  // toggle (exclude, auto-update skip), since AppsContext's own arrays
+  // moved on after a refresh() while this stale reference never did.
+  const [viewingId, setViewingId] = useState<string | null>(null);
+  const viewingApp =
+    (viewingId && [...flatpakApps, ...gearleverApps].find((a) => a.id === viewingId)) || null;
 
   // A section with a pending update auto-expands once so it's not missed
   // — but only until the user explicitly touches it. Applying that as a
@@ -102,14 +108,15 @@ export const AllAppsView: React.FC<AllAppsViewProps> = ({ onBack }) => {
     return (
       <AppImageDetailView
         app={viewingApp}
-        onBack={() => setViewingApp(null)}
+        onBack={() => setViewingId(null)}
         onSaved={async () => {
-          setViewingApp(null);
+          setViewingId(null);
           await refresh(true);
         }}
         onUpdate={() => updateApp(viewingApp.id)}
         onUninstall={() => uninstallApp(viewingApp.id)}
         onToggleExclude={() => toggleExcluded(viewingApp.id)}
+        onToggleAutoUpdateSkip={() => toggleAutoUpdateSkip(viewingApp.id)}
       />
     );
   }
@@ -118,10 +125,11 @@ export const AllAppsView: React.FC<AllAppsViewProps> = ({ onBack }) => {
     return (
       <FlatpakDetailView
         app={viewingApp}
-        onBack={() => setViewingApp(null)}
+        onBack={() => setViewingId(null)}
         onUpdate={() => updateApp(viewingApp.id)}
         onUninstall={() => uninstallApp(viewingApp.id)}
         onToggleExclude={() => toggleExcluded(viewingApp.id)}
+        onToggleAutoUpdateSkip={() => toggleAutoUpdateSkip(viewingApp.id)}
       />
     );
   }
@@ -231,7 +239,7 @@ export const AllAppsView: React.FC<AllAppsViewProps> = ({ onBack }) => {
                   status={statuses[app.id] ?? "idle"}
                   onUpdate={() => updateApp(app.id)}
                   onToggleExclude={() => toggleExcluded(app.id)}
-                  onRowPress={() => setViewingApp(app)}
+                  onRowPress={() => setViewingId(app.id)}
                 />
               ))}
             {flatpakRest.length === 0 && (
@@ -259,7 +267,7 @@ export const AllAppsView: React.FC<AllAppsViewProps> = ({ onBack }) => {
                     status={statuses[app.id] ?? "idle"}
                     onUpdate={() => updateApp(app.id)}
                     onToggleExclude={() => toggleExcluded(app.id)}
-                    onRowPress={() => setViewingApp(app)}
+                    onRowPress={() => setViewingId(app.id)}
                   />
                 ))}
               {gearleverRest.length === 0 && (

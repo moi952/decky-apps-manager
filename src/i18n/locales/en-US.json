@@ -6,14 +6,37 @@
   "settings_view": {
     "settings": "Settings",
     "whats_new_history": "Update history",
-    "update_check_interval_label": "Re-check for updates when opening the panel",
+    "update_check_section_title": "Check on Home open",
+    "update_check_interval_label": "Check frequency",
+    "update_check_interval_description": "How often opening the panel silently re-verifies a cached result, and how often the background check itself runs.",
     "update_check_interval_always": "Every time",
     "update_check_interval_30": "Every 30 minutes",
     "update_check_interval_60": "Every hour",
     "update_check_interval_120": "Every 2 hours",
     "update_check_interval_240": "Every 4 hours",
     "update_check_interval_360": "Every 6 hours",
-    "update_check_interval_720": "Every 12 hours"
+    "update_check_interval_720": "Every 12 hours",
+    "auto_update_section_title": "Auto-update",
+    "auto_update_label": "Update automatically",
+    "auto_update_description": "Apply available updates on their own, using its own frequency below. Excluded apps are still skipped.",
+    "auto_update_interval_label": "Auto-update frequency",
+    "auto_update_interval_description": "How often updates actually get applied on their own, once found — independent of the check frequency above.",
+    "update_toast_label": "Show update notifications",
+    "update_toast_description": "Toast notifications for background/automatic update checks. Updates you trigger yourself always show one.",
+    "auto_update_history_label": "Auto-update history",
+    "auto_update_history_empty": "No automatic update has run yet",
+    "auto_update_history_ok": "Succeeded",
+    "auto_update_history_failed": "Some updates failed",
+    "github_section_title": "GitHub",
+    "feature_request_button": "Request a feature",
+    "feature_request_hint": "Scan with your phone, or press to open in your browser",
+    "bug_report_button": "Report a bug",
+    "bug_report_hint": "Scan with your phone, or press to open in your browser",
+    "support_section_title": "Support",
+    "kofi_button": "Support me on Ko-fi",
+    "kofi_hint": "Scan with your phone, or press to open in your browser",
+    "other_plugins_section_title": "My other plugins",
+    "kofi_description": "This plugin is free and always will be. If you'd still like to lend a hand, every coffee helps."
   },
   "plugin_update": {
     "banner": "Plugin update available: {{version}}",
@@ -50,7 +73,19 @@
         "Sort your list — updates first, or alphabetically",
         "Choose how often the panel re-checks for updates on its own"
       ]
-    }
+    },
+    "v0_2_0": {
+      "title": "What's new in 0.2.0",
+      "items": [
+        "Auto-update: let Apps Manager update everything on its own, on the schedule you choose, with an optional notification",
+        "Skip auto-update for specific apps without hiding them — you'll still see when they need an update, they just won't update themselves",
+        "AppImages: pick a specific version to install, not just the latest one",
+        "New GitHub section in Settings: check for plugin updates, request a feature, or report a bug — all in one place",
+        "Discover my other plugins right from Settings, with a heads-up on the home screen whenever a new one comes out",
+        "Several reliability fixes: app status now updates instantly when you toggle something, and update checks no longer get it wrong when the network isn't ready yet"
+      ]
+    },
+    "support_note": "If you'd like to support the plugin's development, it's always welcome — see the Support section in Settings."
   },
   "apps_view": {
     "section_label": "Apps update",
@@ -79,13 +114,20 @@
     "dismiss_understood": "Got it",
     "installing": "Installing…",
     "updates_available_toast": "{{count}} update(s) available",
+    "auto_updated_toast": "{{count}} app(s) updated automatically",
+    "auto_update_banner_title": "{{count}} app(s) updated automatically",
+    "auto_update_banner_failed_title": "Automatic update had a problem",
     "available_version_label": "Available version: {{version}}",
     "update_available": "Update available",
     "update_done": "Update installed",
     "already_up_to_date": "Already up to date",
     "search": "Search",
     "up_to_date": "Everything is up to date",
-    "reinclude": "Re-include",
+    "up_to_date_flatpak_only": "Flatpaks are up to date",
+    "follow_button": "Follow updates",
+    "ignore_button": "Ignore updates",
+    "auto_update_skip_button": "Block auto-update",
+    "auto_update_unskip_button": "Allow auto-update",
     "checking_updates": "Checking for updates…",
     "github_rate_limit_title": "AppImage update checks paused",
     "github_rate_limit_description": "GitHub limits how often we can check for updates anonymously. Try again in {{minutes}} min."
@@ -93,7 +135,7 @@
   "all_apps_view": {
     "title": "All apps",
     "search": "Search",
-    "excluded_section": "Excluded",
+    "excluded_section": "Ignored",
     "sort_label": "Sort:",
     "sort_update_first": "Updates first",
     "sort_alpha_asc": "A → Z",
@@ -137,7 +179,16 @@
     "remove_confirm_description": "Remove {{name}}? This uninstalls it completely.",
     "remove_success_title": "Removed",
     "remove_error_title": "Removal failed",
-    "remove_error_description": "Check your internet connection and try again."
+    "remove_error_description": "Check your internet connection and try again.",
+    "choose_version_label": "Choose a version",
+    "change_version": "Change version",
+    "loading_versions": "Loading versions…",
+    "no_versions_found": "No matching versions found",
+    "install_version_button": "Install {{version}}",
+    "current_version_installed": "Currently installed",
+    "version_install_success_title": "Version installed",
+    "version_install_error_title": "Couldn't install this version",
+    "version_install_error_description": "Check your internet connection and try again."
   },
   "flatpak_detail_view": {
     "info_version": "Version",
@@ -199,5 +250,14 @@
     "appimage_title": "AppImage",
     "appimage_description": "Search AppImageHub's public catalog, installed via Gearlever.",
     "appimage_requires_gearlever": "Requires Gearlever — install it from the home screen first."
+  },
+  "other_plugins": {
+    "banner_title_one": "New plugin available!",
+    "banner_title_other": "New plugins available!",
+    "open_settings": "Go to Settings",
+    "install_latest": "Install latest version",
+    "installing": "Installing…",
+    "install_failed": "Couldn't fetch the latest release. Try again later.",
+    "view_on_github": "View on GitHub"
   }
 }

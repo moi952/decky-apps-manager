@@ -25,11 +25,13 @@ import { FlatpakDetailView } from "./views/FlatpakDetailView";
 import { usePluginUpdate } from "./context/PluginUpdateContext";
 import { PluginUpdateBanner } from "./components/PluginUpdate";
 import { WhatsNewBanner } from "./components/WhatsNewBanner";
+import { OtherPluginsBanner } from "./components/OtherPluginsBanner";
+import { markOtherPluginsExpanded } from "./utils/otherPluginsFocus";
+import { markFeatureRequestFocus } from "./utils/featureRequestFocus";
 import { loadTranslations } from "./i18n";
 import projectConfig from "./project.config.json";
 
 import type { PluginUpdateInfo } from "./utils/githubReleases";
-import type { AppEntry } from "./types/apps";
 
 type View = "home" | "settings" | "all" | "install" | "install-flatpak" | "install-appimage";
 
@@ -46,10 +48,30 @@ const App: React.FC = () => {
   // its own BackHandler, and it exited the whole plugin instead of just
   // closing the detail view. Handling it here, under its own BackHandler
   // with a real onBack, matches every other view's own working pattern.
-  const [homeViewingApp, setHomeViewingApp] = useState<AppEntry | null>(null);
+  // Only the id is kept here — the app object itself is looked up fresh
+  // from AppsContext's own live arrays on every render (see
+  // homeViewingApp below), instead of freezing whatever AppEntry
+  // reference was current at the moment the page opened. That snapshot
+  // approach silently broke any in-place toggle (exclude, auto-update
+  // skip): AppsContext's own state moved on after a refresh(), but this
+  // stale object never did, so the open detail page kept showing pre-
+  // toggle values indefinitely.
+  const [homeViewingId, setHomeViewingId] = useState<string | null>(null);
   const { info: pluginUpdateInfo } = usePluginUpdate();
   const { t } = useTranslation("common");
-  const { updateApp, uninstallApp, toggleExcluded, refresh } = useApps();
+  const {
+    flatpakApps,
+    gearleverApps,
+    updateApp,
+    uninstallApp,
+    toggleExcluded,
+    toggleAutoUpdateSkip,
+    refresh,
+  } = useApps();
+  const homeViewingApp =
+    (homeViewingId &&
+      [...flatpakApps, ...gearleverApps].find((a) => a.id === homeViewingId)) ||
+    null;
 
   if (view === "settings")
     return (
@@ -92,30 +114,32 @@ const App: React.FC = () => {
 
   if (homeViewingApp?.kind === "appimage")
     return (
-      <BackHandler onBack={() => setHomeViewingApp(null)}>
+      <BackHandler onBack={() => setHomeViewingId(null)}>
         <AppImageDetailView
           app={homeViewingApp}
-          onBack={() => setHomeViewingApp(null)}
+          onBack={() => setHomeViewingId(null)}
           onSaved={async () => {
-            setHomeViewingApp(null);
+            setHomeViewingId(null);
             await refresh(true);
           }}
           onUpdate={() => updateApp(homeViewingApp.id)}
           onUninstall={() => uninstallApp(homeViewingApp.id)}
           onToggleExclude={() => toggleExcluded(homeViewingApp.id)}
+          onToggleAutoUpdateSkip={() => toggleAutoUpdateSkip(homeViewingApp.id)}
         />
       </BackHandler>
     );
 
   if (homeViewingApp?.kind === "flatpak")
     return (
-      <BackHandler onBack={() => setHomeViewingApp(null)}>
+      <BackHandler onBack={() => setHomeViewingId(null)}>
         <FlatpakDetailView
           app={homeViewingApp}
-          onBack={() => setHomeViewingApp(null)}
+          onBack={() => setHomeViewingId(null)}
           onUpdate={() => updateApp(homeViewingApp.id)}
           onUninstall={() => uninstallApp(homeViewingApp.id)}
           onToggleExclude={() => toggleExcluded(homeViewingApp.id)}
+          onToggleAutoUpdateSkip={() => toggleAutoUpdateSkip(homeViewingApp.id)}
         />
       </BackHandler>
     );
@@ -132,8 +156,19 @@ const App: React.FC = () => {
         info={pluginUpdateInfo}
         onClick={() => setView("settings")}
       />
-      <WhatsNewBanner />
-      <HomeView onOpenApp={setHomeViewingApp} />
+      <WhatsNewBanner
+        onFeatureRequest={() => {
+          markFeatureRequestFocus();
+          setView("settings");
+        }}
+      />
+      <OtherPluginsBanner
+        onOpenSettings={() => {
+          markOtherPluginsExpanded();
+          setView("settings");
+        }}
+      />
+      <HomeView onOpenApp={(app) => setHomeViewingId(app.id)} />
     </BackHandler>
   );
 };

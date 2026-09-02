@@ -7,6 +7,7 @@ import { StatusCard } from "@moi952/decky-ui-kit";
 import PanelSectionCustom from "../components/PanelSectionCustom";
 import { UpdateAllBar } from "../components/UpdateAllBar";
 import { GearleverNotice } from "../components/GearleverNotice";
+import { AutoUpdateBanner } from "../components/AutoUpdateBanner";
 import { SearchField } from "../components/SearchField";
 import { LoadingIndicator } from "../components/LoadingIndicator";
 import { TopProgressBar } from "../components/TopProgressBar";
@@ -66,19 +67,6 @@ export const HomeView: React.FC<HomeViewProps> = ({ onOpenApp }) => {
     <PanelSectionCustom>
       <style>{APP_SECTION_HEADER_STYLES}</style>
 
-      {rateLimited && (
-        <div style={{ marginBottom: 12 }}>
-          <StatusCard
-            variant="error"
-            icon={<FiClock />}
-            title={t("github_rate_limit_title")}
-            description={t("github_rate_limit_description", {
-              minutes: minutesUntil(githubRateLimitedUntil!),
-            })}
-          />
-        </div>
-      )}
-
       {backgroundLoading && (
         <div style={{ marginBottom: 8 }}>
           <TopProgressBar />
@@ -86,6 +74,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onOpenApp }) => {
       )}
 
       <UpdateAllBar />
+      <AutoUpdateBanner />
       <GearleverNotice installed={gearleverInstalled} />
 
       {totalUpdatableUnfiltered > 2 && (
@@ -110,6 +99,27 @@ export const HomeView: React.FC<HomeViewProps> = ({ onOpenApp }) => {
         // just behind it flashes "up to date" for a moment first.
         backgroundLoading ? (
           <LoadingIndicator label={t("checking_updates")} />
+        ) : rateLimited ? (
+          // Nothing came back flagged as needing an update, but the
+          // GitHub-sourced AppImage checks were skipped this cycle (see
+          // gearlever.py's own rate-limit-marker note) — "everything is
+          // up to date" would be a claim we can't actually back for
+          // those, so this splits into what was genuinely verified
+          // (Flatpaks) and what's actually paused (AppImages), rather
+          // than one merged claim glossing over the difference.
+          <>
+            <div style={{ marginBottom: 12 }}>
+              <StatusCard variant="success" title={t("up_to_date_flatpak_only")} />
+            </div>
+            <StatusCard
+              variant="error"
+              icon={<FiClock />}
+              title={t("github_rate_limit_title")}
+              description={t("github_rate_limit_description", {
+                minutes: minutesUntil(githubRateLimitedUntil!),
+              })}
+            />
+          </>
         ) : (
           <StatusCard variant="success" title={t("up_to_date")} />
         )

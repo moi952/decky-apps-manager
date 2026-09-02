@@ -17,6 +17,7 @@ list`, then compare it against the remote's current `Commit:` via
 even for --system, and no local appstream/summary refresh required —
 it queries the remote directly).
 """
+import asyncio
 import os
 import re
 from pathlib import Path
@@ -28,6 +29,11 @@ from . import http_json, proc_env
 
 _LOG = "flatpak"
 _ICON_SIZES = ("256x256", "128x128", "64x64", "48x48")
+# Caps how many apps' update checks run at once — each one is a
+# flatpak subprocess (and, on a commit mismatch, a second, heavier
+# --no-deploy pull), so unbounded concurrency could saturate the Deck's
+# network/CPU rather than actually speed things up.
+_CHECK_CONCURRENCY = 4
 # Steam Deck is x86_64-only — same assumption Gearlever's own update
 # managers make when picking an asset (see e.g. GithubUpdater.system_arch
 # in its own source) — used below to locate cached appstream icons.
@@ -143,13 +149,18 @@ async def _check_update(
 
 async def list_apps_with_updates(scope: proc_env.Scope) -> List[Dict[str, Any]]:
     apps = await list_installed(scope)
-    for app in apps:
+    sem = asyncio.Semaphore(_CHECK_CONCURRENCY)
+
+    async def _check(app: Dict[str, Any]) -> None:
         active = app.pop("_active_commit", "")
         origin = app.pop("_origin", "")
-        available = await _check_update(scope, app["app_id"], active, origin)
+        async with sem:
+            available = await _check_update(scope, app["app_id"], active, origin)
         if available is not None:
             app["has_update"] = True
             app["available_version"] = available or None
+
+    await asyncio.gather(*(_check(app) for app in apps))
     return apps
 
 

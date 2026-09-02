@@ -14,6 +14,7 @@ AppImage's own file path, not the old base64(app name) scheme the
 now-unused apps.json used (see lib/ini_config.py::Config vs the
 migration-only lib/json_config.py in Gearlever's own source).
 """
+import asyncio
 import configparser
 import hashlib
 import json
@@ -27,6 +28,9 @@ from . import gearlever_versions, proc_env
 
 _LOG = "gearlever"
 APP_ID = "it.mijorus.gearlever"
+# Caps how many apps' version lookups run at once — each one is a live
+# GitHub/GitLab/Codeberg/Forgejo API call, not a free local read.
+_RESOLVE_CONCURRENCY = 4
 
 
 def _run_gearlever(args: List[str], timeout: Optional[float] = 60):
@@ -179,18 +183,29 @@ def _parse_trailing_json(out: str) -> Optional[Dict[str, Any]]:
 
 
 async def _list_json_raw(args: List[str], key: str) -> tuple:
-    """Same as _list_json, but also hands back the raw stdout — needed by
-    list_apps_with_updates() to notice a rate-limit marker even when it
-    sits alongside otherwise-parseable JSON (see _parse_trailing_json's
-    own note: the marker line(s) precede the JSON, they don't break it)."""
-    code, out, _ = await _run_gearlever([*args, "--json"])
+    """Same as _list_json, but also hands back raw stdout+stderr combined
+    — needed by list_apps_with_updates() to notice a rate-limit marker
+    even when it sits alongside otherwise-parseable JSON (see
+    _parse_trailing_json's own note: the marker line(s) precede the
+    JSON, they don't break it).
+
+    Confirmed on-device this marker can land on stderr, not stdout, for
+    --list-updates --json specifically: Gearlever's own Cli.py wraps
+    each app's is_update_available() call in `with redirect_stdout(sys.
+    stderr)` for the duration of a --json invocation — so the very
+    `print(str(e))` this marker relies on (inside GithubUpdater.
+    fetch_target_asset's own rate-limit except clause) ends up on
+    stderr, invisible to a stdout-only check. A real GitHub rate limit
+    then silently looked identical to "genuinely up to date" here."""
+    code, out, err = await _run_gearlever([*args, "--json"])
     if code != 0:
         return [], ""
     data = _parse_trailing_json(out)
+    combined = out + err
     if data is None:
         decky.logger.error(f"[{_LOG}] couldn't parse --json output for {args}: {out[:500]}")
-        return [], out
-    return data.get(key, []), out
+        return [], combined
+    return data.get(key, []), combined
 
 
 async def _list_json(args: List[str], key: str) -> List[Dict[str, Any]]:
@@ -287,12 +302,13 @@ async def list_apps_with_updates() -> List[Dict[str, Any]]:
     # Gearlever's own --list-updates silently skips an app whose
     # GithubUpdater check hit GitHub's rate limit (it just never adds it
     # to `updates`, indistinguishable there from "genuinely up to date") —
-    # its own stdout is the only place that failure shows up at all (see
-    # _parse_trailing_json's note). When it's present, every GithubUpdater
-    # app not already confirmed up-to-date-or-not might really be
-    # unchecked, so surface the same rate_limited_until a per-app version
-    # lookup would (apps_service.py already takes the max of these across
-    # all apps for its one banner).
+    # the marker (see _list_json_raw's own note on why stderr has to be
+    # checked too, not just stdout) is the only place that failure shows
+    # up at all. When it's present, every GithubUpdater app not already
+    # confirmed up-to-date-or-not might really be unchecked, so surface
+    # the same rate_limited_until a per-app version lookup would
+    # (apps_service.py already takes the max of these across all apps
+    # for its one banner).
     rate_limited_until = None
     if _RATE_LIMIT_MARKER in raw:
         try:
@@ -300,18 +316,23 @@ async def list_apps_with_updates() -> List[Dict[str, Any]]:
         except Exception as e:
             decky.logger.error(f"[{_LOG}] rate limit check: {e}")
 
-    for app in apps:
+    sem = asyncio.Semaphore(_RESOLVE_CONCURRENCY)
+
+    async def _resolve(app: Dict[str, Any]) -> None:
         if app["file_path"] in paths_with_updates:
             app["has_update"] = True
-            info = await gearlever_versions.resolve_available_version(
-                app["update_manager"], app["update_manager_config"]
-            )
+            async with sem:
+                info = await gearlever_versions.resolve_available_version(
+                    app["update_manager"], app["update_manager_config"]
+                )
             app["available_version"] = info.version
             app["release_notes"] = info.notes
             app["release_url"] = info.url
             app["github_rate_limited_until"] = info.rate_limited_until
         elif rate_limited_until and app["update_manager"] == "GithubUpdater":
             app["github_rate_limited_until"] = rate_limited_until
+
+    await asyncio.gather(*(_resolve(app) for app in apps))
     return apps
 
 
@@ -327,6 +348,60 @@ async def check_single(file_path: str) -> Optional[bool]:
 async def update_one(file_path: str) -> bool:
     code, _, _ = await _run_gearlever(["--update", file_path, "--yes"], timeout=600)
     return code == 0
+
+
+async def replace_appimage_file(file_path: str, url: str, version: str) -> bool:
+    """Switches an already-integrated AppImage to a specific version by
+    downloading `url` and overwriting the exact file Gearlever already
+    tracks — its own desktop entry/config point at this literal path, so
+    unlike a fresh install this needs no --integrate afterward, just the
+    file itself replaced in place. Gearlever's own --update has no way to
+    target anything but whatever its manager resolves as "latest", which
+    is why this bypasses it entirely rather than trying to steer it.
+
+    Downloaded to a sibling ".tmp-update" file first and swapped in with
+    Path.replace() (atomic rename) rather than overwriting file_path
+    directly — a failed/interrupted download then never leaves the
+    working AppImage half-written.
+
+    The swap alone isn't enough, though — see _set_desktop_entry_version's
+    own note: Gearlever's displayed version comes from its .desktop
+    file's X-AppImage-Version key, a value this raw swap never touches on
+    its own, confirmed on-device (installing an older release still
+    showed the previous version, and — since Gearlever's own update
+    check compares real file content, not that stale string — correctly
+    flagged "update available" right back to it). Patched by hand here so
+    both this plugin and Gearlever's own app report the version that's
+    actually now on disk. Best-effort: a failure here is logged but
+    doesn't fail the swap itself, which already succeeded on its own
+    terms (the app does run the new version either way)."""
+    tmp = Path(f"{file_path}.tmp-update")
+    code, _, _ = await proc_env.run(
+        ["curl", "-sfL", "-o", str(tmp), url], "user", _LOG, timeout=900,
+    )
+    if code != 0 or not tmp.is_file() or tmp.stat().st_size == 0:
+        try:
+            tmp.unlink(missing_ok=True)
+        except OSError:
+            pass
+        return False
+    try:
+        tmp.chmod(0o755)
+        tmp.replace(file_path)
+    except OSError as e:
+        decky.logger.error(f"[{_LOG}] replacing {file_path}: {e}")
+        try:
+            tmp.unlink(missing_ok=True)
+        except OSError:
+            pass
+        return False
+
+    desktop_file = _find_desktop_file(file_path)
+    if desktop_file:
+        _set_desktop_entry_version(desktop_file, version)
+    else:
+        decky.logger.error(f"[{_LOG}] no .desktop file found for {file_path}, version display may be stale")
+    return True
 
 
 async def update_many(file_paths: List[str]) -> bool:
@@ -366,6 +441,21 @@ async def set_update_source(file_path: str, manager: str, config: Dict[str, str]
     return code == 0
 
 
+def _find_desktop_file(file_path: str) -> Optional[Path]:
+    """Locates the .desktop entry Gearlever wrote for this AppImage,
+    matched by its Exec target — the only link back from a bare file
+    path to Gearlever's own tracking of that app."""
+    applications_dir = Path(decky.DECKY_USER_HOME) / ".local" / "share" / "applications"
+    try:
+        for desktop_file in sorted(applications_dir.glob("*.desktop")):
+            content = desktop_file.read_text(encoding="utf-8", errors="replace")
+            if file_path in content:
+                return desktop_file
+    except OSError:
+        pass
+    return None
+
+
 def _icon_from_desktop_file(desktop_file: Path) -> Optional[str]:
     try:
         content = desktop_file.read_text(encoding="utf-8", errors="replace")
@@ -377,21 +467,55 @@ def _icon_from_desktop_file(desktop_file: Path) -> Optional[str]:
     return None
 
 
+def _set_desktop_entry_version(desktop_file: Path, version: str) -> bool:
+    """Gearlever reads the version it displays (both --list-installed and
+    its own GTK app — confirmed against its real source,
+    AppImageProvider.list_installed -> _get_app_version) straight out of
+    this .desktop file's X-AppImage-Version custom key — never by
+    re-inspecting the AppImage binary's own bytes at list time. That key
+    is only ever written when Gearlever itself runs its own real
+    install_file() pipeline (on --integrate, or internally during
+    --update), which replace_appimage_file() below deliberately bypasses
+    (Gearlever's CLI has no way to target an arbitrary release — always
+    "whatever the manager resolves as latest"). So this file is the one
+    other place that has to be told about a version switch by hand, or
+    both this plugin and Gearlever's own app keep reporting the version
+    that was true before the swap. A plain line-level edit rather than a
+    full desktop-entry parse/rewrite, so everything else in the file
+    (icon, exec args, actions, comments) is left untouched."""
+    try:
+        content = desktop_file.read_text(encoding="utf-8")
+    except OSError as e:
+        decky.logger.error(f"[{_LOG}] reading {desktop_file}: {e}")
+        return False
+
+    new_line = f"X-AppImage-Version={version}"
+    if re.search(r"(?m)^X-AppImage-Version=.*$", content):
+        new_content = re.sub(r"(?m)^X-AppImage-Version=.*$", new_line, content, count=1)
+    else:
+        new_content, n = re.subn(
+            r"(?m)^\[Desktop Entry\]$", f"[Desktop Entry]\n{new_line}", content, count=1
+        )
+        if n == 0:
+            decky.logger.error(f"[{_LOG}] no [Desktop Entry] section in {desktop_file}")
+            return False
+
+    try:
+        desktop_file.write_text(new_content, encoding="utf-8")
+        return True
+    except OSError as e:
+        decky.logger.error(f"[{_LOG}] writing {desktop_file}: {e}")
+        return False
+
+
 def icon_path(file_path: str) -> Optional[Path]:
     """Best-effort icon lookup: find the .desktop entry Gearlever wrote for
     this AppImage (matched by Exec target), read its Icon= value, then
     resolve that as an absolute path or an XDG icon-theme name."""
-    local_share = Path(decky.DECKY_USER_HOME) / ".local" / "share"
-    applications_dir = local_share / "applications"
     icon_ref: Optional[str] = None
-    try:
-        for desktop_file in sorted(applications_dir.glob("*.desktop")):
-            content = desktop_file.read_text(encoding="utf-8", errors="replace")
-            if file_path in content:
-                icon_ref = _icon_from_desktop_file(desktop_file)
-                break
-    except OSError:
-        return None
+    desktop_file = _find_desktop_file(file_path)
+    if desktop_file:
+        icon_ref = _icon_from_desktop_file(desktop_file)
 
     if not icon_ref:
         return None

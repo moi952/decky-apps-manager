@@ -114,7 +114,8 @@ export const AppRow: React.FC<AppRowProps> = ({
           ) : (
             <div style={{ flex: 1 }}>
               <ActionButton size="small" width="100%" onClick={onToggleExclude}>
-                <FiEye size={12} /> {t("reinclude")}
+                <FiEye size={12} style={{ marginRight: 4 }} />
+                {t("follow_button")}
               </ActionButton>
             </div>
           )}

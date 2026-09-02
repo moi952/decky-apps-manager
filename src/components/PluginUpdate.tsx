@@ -16,21 +16,9 @@ import {
   PluginRelease,
   PluginUpdateInfo,
 } from "../utils/githubReleases";
+import { getDeckyBackend, installPlugin, PluginInstallType } from "../utils/deckyInstall";
 
 export type { PluginUpdateInfo, PluginRelease };
-
-// Decky Loader's own PluginInstallType enum — verified against
-// backend/decky_loader/browser.py in SteamDeckHomebrew/decky-loader. Only
-// used for labeling Decky's own native install-confirm dialog (see
-// PluginBrowser.request_plugin_install in that file, which just forwards it
-// to a UI event); the actual install always installs whatever artifact/
-// version/hash was passed regardless of this value.
-enum PluginInstallType {
-  INSTALL = 0,
-  REINSTALL = 1,
-  UPDATE = 2,
-  DOWNGRADE = 3,
-}
 
 const installTypeFor = (
   targetVersion: string,
@@ -51,13 +39,16 @@ const SELECTION_RESTORE_WINDOW_MS = 5000;
 let lastSelectedTag = "";
 let lastSelectedTagAt = 0;
 
-// window.DeckyBackend lives on whichever window actually created this
-// document. In Gaming Mode the Quick Access panel renders inside a popup
-// window (opened via window.open by Big Picture Mode) — DeckyBackend is
-// undefined on that popup's own `window` there, but reachable via
-// `window.opener`.
-const getDeckyBackend = (): Window["DeckyBackend"] | null =>
-  window.DeckyBackend ?? window.opener?.DeckyBackend ?? null;
+// Same remount problem, for the actual install/download progress this
+// time — Decky's own download keeps running across a QAM close/reopen,
+// but `installing`/`downloadActive` are plain component state, so without
+// this they'd silently reset to "not installing" and the button would
+// become clickable again mid-download. No restore window here (unlike
+// the selection above): these must survive for as long as the operation
+// they track actually runs, however long that is.
+let persistedInstalling = false;
+let persistedDownloadActive = false;
+let persistedDownloadPercent = 0;
 
 // If Decky's own loader install dies silently (e.g. a dead asset URL),
 // nothing else would ever flip the "installing" state back off — this is
@@ -127,10 +118,22 @@ export function PluginUpdateSection({
   onCheckNow,
 }: PluginUpdateSectionProps) {
   const { t } = useTranslation("plugin_update");
-  const [installing, setInstalling] = useState(false);
-  const [downloadActive, setDownloadActive] = useState(false);
-  const [downloadPercent, setDownloadPercent] = useState(0);
-  const downloadActiveRef = useRef(false);
+  const [installing, setInstallingState] = useState(persistedInstalling);
+  const [downloadActive, setDownloadActiveState] = useState(persistedDownloadActive);
+  const [downloadPercent, setDownloadPercentState] = useState(persistedDownloadPercent);
+  const setInstalling = (v: boolean) => {
+    persistedInstalling = v;
+    setInstallingState(v);
+  };
+  const setDownloadActive = (v: boolean) => {
+    persistedDownloadActive = v;
+    setDownloadActiveState(v);
+  };
+  const setDownloadPercent = (v: number) => {
+    persistedDownloadPercent = v;
+    setDownloadPercentState(v);
+  };
+  const downloadActiveRef = useRef(persistedDownloadActive);
   const watchdogRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [releases, setReleases] = useState<PluginRelease[] | null>(null);
@@ -215,6 +218,13 @@ export function PluginUpdateSection({
       backend.call("loader/reload_plugin", name).catch(() => {});
     };
 
+    // Remounted mid-download (QAM closed/reopened): no fresh onStart will
+    // ever fire for this same download, so the watchdog — otherwise only
+    // armed from inside onStart/onInfo — would stay unset until the next
+    // progress tick arrives. Arm it right away instead, or a stall in
+    // that exact gap would never get caught.
+    if (downloadActiveRef.current) armWatchdog();
+
     backend.addEventListener("loader/plugin_download_start", onStart);
     backend.addEventListener("loader/plugin_download_info", onInfo);
     backend.addEventListener("loader/plugin_download_finish", onFinish);
@@ -232,8 +242,7 @@ export function PluginUpdateSection({
     assetUrl: string,
     sha256: string
   ) => {
-    const backend = getDeckyBackend();
-    if (!backend) {
+    if (!getDeckyBackend()) {
       toaster.toast({
         title: t("install_failed_title"),
         body: t("no_backend"),
@@ -245,12 +254,11 @@ export function PluginUpdateSection({
       // Only registers the request and pops Decky's own native confirm
       // modal (which owns the actual download/install and its own progress
       // bar) — returns immediately, the listeners above mirror the rest.
-      await backend.call(
-        "utilities/install_plugin",
+      await installPlugin(
         assetUrl,
         displayName,
         version,
-        sha256 || "",
+        sha256,
         installTypeFor(version, info?.current_version ?? version)
       );
     } catch (e) {

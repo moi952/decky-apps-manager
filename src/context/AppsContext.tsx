@@ -12,6 +12,7 @@ import {
   AppEntry,
   AppRowStatus,
   AppsListResponse,
+  AutoUpdateHistoryEntry,
   UpdateAppResult,
 } from "../types/apps";
 
@@ -33,12 +34,36 @@ interface AppsContextValue {
   uninstallApp: (id: string) => Promise<boolean>;
   updateAll: () => Promise<void>;
   toggleExcluded: (id: string) => Promise<void>;
+  toggleAutoUpdateSkip: (id: string) => Promise<void>;
   // How long a cached result is trusted before merely opening/returning
   // to the panel is allowed to silently re-verify it in the background
   // (see refresh()'s own note) — 0 means "every time", matching the
   // backend's own get_update_check_interval_minutes default.
   updateCheckIntervalMinutes: number;
   setUpdateCheckIntervalMinutes: (minutes: number) => void;
+  // Whether the background check (see updateCheckIntervalMinutes above,
+  // which also governs how often it runs) applies updates on its own
+  // instead of only notifying. Excluded apps are skipped either way —
+  // update_all_apps/apps_service.update_all() already filters those out.
+  autoUpdateEnabled: boolean;
+  setAutoUpdateEnabled: (enabled: boolean) => void;
+  // How often updates actually get applied on their own, once found —
+  // separate from updateCheckIntervalMinutes above (how often they're
+  // checked/surfaced), so a user can check often but auto-apply less
+  // often, or vice versa.
+  autoUpdateIntervalMinutes: number;
+  setAutoUpdateIntervalMinutes: (minutes: number) => void;
+  // Toast for a background/automatic update check — a separate concern
+  // from the toasts a user's own click (update/uninstall/etc.) always
+  // shows, which this does not affect.
+  showUpdateToasts: boolean;
+  setShowUpdateToasts: (enabled: boolean) => void;
+  // Newest-first, capped log of past auto-update runs — kept regardless
+  // of the toast above, since that toast can easily go unseen (the
+  // background loop runs while the panel may be closed).
+  autoUpdateHistory: AutoUpdateHistoryEntry[];
+  hasUnseenAutoUpdate: boolean;
+  markAutoUpdateHistorySeen: () => void;
 }
 
 const AppsContext = createContext<AppsContextValue | null>(null);
@@ -63,6 +88,11 @@ export const AppsProvider: React.FC<{ children: React.ReactNode }> = ({
   // _DEFAULT_UPDATE_CHECK_INTERVAL_MINUTES) until the real stored value
   // comes back, right after mount.
   const [updateCheckIntervalMinutes, setUpdateCheckIntervalMinutesState] = useState(60);
+  const [autoUpdateEnabled, setAutoUpdateEnabledState] = useState(false);
+  const [autoUpdateIntervalMinutes, setAutoUpdateIntervalMinutesState] = useState(720);
+  const [showUpdateToasts, setShowUpdateToastsState] = useState(true);
+  const [autoUpdateHistory, setAutoUpdateHistory] = useState<AutoUpdateHistoryEntry[]>([]);
+  const [hasUnseenAutoUpdate, setHasUnseenAutoUpdate] = useState(false);
 
   const setStatus = (id: string, status: AppRowStatus) =>
     setStatuses((prev) => ({ ...prev, [id]: status }));
@@ -76,6 +106,49 @@ export const AppsProvider: React.FC<{ children: React.ReactNode }> = ({
   const setUpdateCheckIntervalMinutes = useCallback((minutes: number) => {
     setUpdateCheckIntervalMinutesState(minutes);
     call<[number], boolean>("set_update_check_interval_minutes", minutes);
+  }, []);
+
+  useEffect(() => {
+    call<[], boolean>("get_auto_update_enabled").then(setAutoUpdateEnabledState);
+  }, []);
+
+  const setAutoUpdateEnabled = useCallback((enabled: boolean) => {
+    setAutoUpdateEnabledState(enabled);
+    call<[boolean], boolean>("set_auto_update_enabled", enabled);
+  }, []);
+
+  useEffect(() => {
+    call<[], number>("get_auto_update_interval_minutes").then(
+      setAutoUpdateIntervalMinutesState
+    );
+  }, []);
+
+  const setAutoUpdateIntervalMinutes = useCallback((minutes: number) => {
+    setAutoUpdateIntervalMinutesState(minutes);
+    call<[number], boolean>("set_auto_update_interval_minutes", minutes);
+  }, []);
+
+  useEffect(() => {
+    call<[], boolean>("get_update_toast_enabled").then(setShowUpdateToastsState);
+  }, []);
+
+  const setShowUpdateToasts = useCallback((enabled: boolean) => {
+    setShowUpdateToastsState(enabled);
+    call<[boolean], boolean>("set_update_toast_enabled", enabled);
+  }, []);
+
+  const refreshAutoUpdateHistory = useCallback(() => {
+    call<[], AutoUpdateHistoryEntry[]>("get_auto_update_history").then(setAutoUpdateHistory);
+    call<[], boolean>("get_auto_update_history_has_unseen").then(setHasUnseenAutoUpdate);
+  }, []);
+
+  useEffect(() => {
+    refreshAutoUpdateHistory();
+  }, [refreshAutoUpdateHistory]);
+
+  const markAutoUpdateHistorySeen = useCallback(() => {
+    setHasUnseenAutoUpdate(false);
+    call<[], boolean>("mark_auto_update_history_seen");
   }, []);
 
   const applyData = (data: AppsListResponse) => {
@@ -158,15 +231,42 @@ export const AppsProvider: React.FC<{ children: React.ReactNode }> = ({
     const listener = addEventListener(
       "apps_update_available",
       (info: { count: number }) => {
-        toaster.toast({
-          title: t("section_label"),
-          body: t("updates_available_toast", { count: info?.count }),
-        });
+        if (showUpdateToasts) {
+          toaster.toast({
+            title: t("section_label"),
+            body: t("updates_available_toast", { count: info?.count }),
+          });
+        }
         refresh(false);
       }
     );
     return () => removeEventListener("apps_update_available", listener);
-  }, [t, refresh]);
+  }, [t, refresh, showUpdateToasts]);
+
+  // Fired instead of apps_update_available when the background loop found
+  // updates AND auto-update is on — it already applied them itself
+  // (apps_service.update_all(), same path "Update all" uses, so the
+  // exclude list is respected the same way), this just reports what
+  // happened and picks up the now-current state. The toast toggle only
+  // gates the toast itself — the persisted history (refreshed here too)
+  // always records the run regardless, since that toast is exactly the
+  // kind of easy-to-miss notice the history exists to back up.
+  useEffect(() => {
+    const listener = addEventListener(
+      "apps_auto_updated",
+      (info: { count: number }) => {
+        if (showUpdateToasts) {
+          toaster.toast({
+            title: t("section_label"),
+            body: t("auto_updated_toast", { count: info?.count }),
+          });
+        }
+        refresh(false);
+        refreshAutoUpdateHistory();
+      }
+    );
+    return () => removeEventListener("apps_auto_updated", listener);
+  }, [t, refresh, showUpdateToasts, refreshAutoUpdateHistory]);
 
   // Returns whether the app ended up in a good state (updated, or was
   // already current) — callers that navigate away on success (e.g. a
@@ -261,6 +361,18 @@ export const AppsProvider: React.FC<{ children: React.ReactNode }> = ({
     [refresh]
   );
 
+  const toggleAutoUpdateSkip = useCallback(
+    async (id: string) => {
+      const current = await call<[], string[]>("get_auto_update_skip_apps");
+      const next = current.includes(id)
+        ? current.filter((x) => x !== id)
+        : [...current, id];
+      await call<[string[]], boolean>("set_auto_update_skip_apps", next);
+      await refresh(false);
+    },
+    [refresh]
+  );
+
   return (
     <AppsContext.Provider
       value={{
@@ -277,8 +389,18 @@ export const AppsProvider: React.FC<{ children: React.ReactNode }> = ({
         uninstallApp,
         updateAll,
         toggleExcluded,
+        toggleAutoUpdateSkip,
         updateCheckIntervalMinutes,
         setUpdateCheckIntervalMinutes,
+        autoUpdateEnabled,
+        setAutoUpdateEnabled,
+        autoUpdateIntervalMinutes,
+        setAutoUpdateIntervalMinutes,
+        showUpdateToasts,
+        setShowUpdateToasts,
+        autoUpdateHistory,
+        hasUnseenAutoUpdate,
+        markAutoUpdateHistorySeen,
       }}
     >
       {children}
