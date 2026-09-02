@@ -10,15 +10,14 @@ Apps Manager keeps track of every Flatpak app you have installed (including the 
 
 > 🙏 **Thanks to [Gearlever](https://github.com/mijorus/gearlever)** by [mijorus](https://github.com/mijorus) — the AppImage side of this plugin runs entirely on top of it.
 
-### ✨ New in 0.1.0
+### ✨ New in 0.2.0
 
-- First release
-- Track your Flatpak apps and Gearlever AppImages, with updates flagged automatically
-- Search and install new Flatpaks and AppImages, screenshots included
-- Update everything at once or one app at a time
-- Exclude apps you don't want to be nagged about
-- Sort your list — updates first, or alphabetically
-- Choose how often the panel re-checks for updates on its own
+- Auto-update: let Apps Manager update everything on its own, on the schedule you choose, with an optional notification
+- Skip auto-update for specific apps without hiding them — you'll still see when they need an update, they just won't update themselves
+- AppImages: pick a specific version to install, not just the latest one
+- New GitHub section in Settings: check for plugin updates, request a feature, or report a bug — all in one place
+- Discover my other plugins right from Settings, with a heads-up on the home screen whenever a new one comes out
+- Several reliability fixes: app status now updates instantly when you toggle something, and update checks no longer get it wrong when the network isn't ready yet
 
 ---
 
