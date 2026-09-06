@@ -10,6 +10,7 @@ import {
 } from "@moi952/decky-ui-kit";
 import { useTranslation } from "react-i18next";
 import {
+  FiAlertTriangle,
   FiArrowLeft,
   FiEye,
   FiEyeOff,
@@ -113,11 +114,23 @@ export const FlatpakDetailView: React.FC<FlatpakDetailViewProps> = ({
 
   const infoRows: InfoTableRow[] = [
     { icon: <FiTag size={13} />, label: t("info_version"), value: app.version ?? "—" },
-    ...(app.has_update
+    // One combined row — check_failed and has_update never both hold at
+    // once (a failed check never also reports a confirmed update), so
+    // there's never a real conflict between the two to show here.
+    ...(app.update_check_failed
+      ? [
+        {
+          icon: <FiAlertTriangle size={13} />,
+          label: t("info_status"),
+          value: tApps("update_check_failed_label"),
+          accent: "#ef4444",
+        },
+      ]
+      : app.has_update
       ? [
         {
           icon: <FiUpload size={13} />,
-          label: t("info_available_version"),
+          label: t("info_status"),
           // See AppRow.tsx's own note — a same-looking version can still
           // mean "an update exists" (commit-level change only).
           value:

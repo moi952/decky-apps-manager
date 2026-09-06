@@ -34,7 +34,15 @@ export const AutoUpdateHistoryList: React.FC = () => {
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             {entry.apps.map((a, j) => (
-              <AutoUpdateAppRow key={j} id={a.id} name={a.name} kind={a.kind} color="dark" />
+              <AutoUpdateAppRow
+                key={j}
+                id={a.id}
+                name={a.name}
+                kind={a.kind}
+                color="dark"
+                oldVersion={a.old_version}
+                newVersion={a.new_version}
+              />
             ))}
           </div>
         </div>

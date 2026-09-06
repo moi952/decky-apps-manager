@@ -1,13 +1,11 @@
 import asyncio
-import json
 import traceback
-from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import decky
+from decky_plugin_toolkit import PluginUpdaterMixin, WhatsNewSeenMixin, OtherPluginsSeenMixin
 
 from . import apps_service
-from .plugin_updater import PluginUpdaterMixin
 
 _UPDATE_CHECK_INTERVAL_SECONDS = 3 * 60 * 60
 # Floor for the background loop's own cadence — the user-facing interval
@@ -31,7 +29,7 @@ def _background_loop_seconds() -> int:
     return max(minutes * 60, _MIN_BACKGROUND_CHECK_INTERVAL_SECONDS)
 
 
-class Plugin(PluginUpdaterMixin):
+class Plugin(PluginUpdaterMixin, WhatsNewSeenMixin, OtherPluginsSeenMixin):
 
     async def ping(self) -> str:
         decky.logger.info("[ping] pong")
@@ -178,7 +176,13 @@ class Plugin(PluginUpdaterMixin):
                         ok = await apps_service.update_all(respect_auto_update_skip=True)
                         apps_service.record_auto_update_history(
                             [
-                                {"id": a["id"], "name": a["name"], "kind": a["kind"]}
+                                {
+                                    "id": a["id"],
+                                    "name": a["name"],
+                                    "kind": a["kind"],
+                                    "old_version": a.get("version"),
+                                    "new_version": a.get("available_version"),
+                                }
                                 for a in (*auto_flatpak, *auto_gearlever)
                             ],
                             ok,
@@ -199,56 +203,6 @@ class Plugin(PluginUpdaterMixin):
             # startup, so a setting change the user makes in Settings takes
             # effect on the very next iteration, not just after a restart.
             await asyncio.sleep(_background_loop_seconds())
-
-    # ── What's New (tracks which version's changelog the user has already
-    # seen — see WhatsNewContext.tsx / WhatsNewBanner.tsx) ───────────────────
-
-    def _whats_new_path(self) -> Path:
-        return Path(decky.DECKY_PLUGIN_SETTINGS_DIR) / "whats_new_seen.json"
-
-    async def get_whats_new_seen_version(self) -> str:
-        try:
-            path = self._whats_new_path()
-            if path.is_file():
-                return json.loads(path.read_text(encoding="utf-8")).get("version", "")
-        except Exception as e:
-            decky.logger.error(f"[get_whats_new_seen_version] {e}")
-        return ""
-
-    async def set_whats_new_seen_version(self, version: str) -> bool:
-        try:
-            path = self._whats_new_path()
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(json.dumps({"version": version}), encoding="utf-8")
-            return True
-        except Exception as e:
-            decky.logger.error(f"[set_whats_new_seen_version] {e}")
-            return False
-
-    # ── Other plugins (tracks which plugin ids from moi952/decky-plugins the
-    # user has already seen — see OtherPluginsContext.tsx) ──────────────────
-
-    def _other_plugins_seen_path(self) -> Path:
-        return Path(decky.DECKY_PLUGIN_SETTINGS_DIR) / "other_plugins_seen.json"
-
-    async def get_other_plugins_seen_ids(self) -> List[str]:
-        try:
-            path = self._other_plugins_seen_path()
-            if path.is_file():
-                return json.loads(path.read_text(encoding="utf-8")).get("ids", [])
-        except Exception as e:
-            decky.logger.error(f"[get_other_plugins_seen_ids] {e}")
-        return []
-
-    async def set_other_plugins_seen_ids(self, ids: List[str]) -> bool:
-        try:
-            path = self._other_plugins_seen_path()
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(json.dumps({"ids": ids}), encoding="utf-8")
-            return True
-        except Exception as e:
-            decky.logger.error(f"[set_other_plugins_seen_ids] {e}")
-            return False
 
     # ── Lifecycle ─────────────────────────────────────────────────────────
 

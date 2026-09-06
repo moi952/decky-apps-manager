@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { call } from "@decky/api";
 import { MediaRow } from "@moi952/decky-ui-kit";
+import { useTranslation } from "react-i18next";
+import { FiArrowRight } from "react-icons/fi";
 
 import { getCachedIcon, setCachedIcon } from "../utils/iconCache";
 import { AppKind } from "../types/apps";
@@ -13,6 +15,14 @@ interface AutoUpdateAppRowProps {
   // red background would otherwise clash with a solid row background);
   // a real color for standalone use (Settings' own history list).
   color?: "light" | "dark" | "transparent" | "success" | "danger" | "info" | "warning";
+  // Omit to leave the row a plain (non-navigating) display, e.g. when the
+  // caller couldn't resolve this id back to a still-installed app.
+  onPress?: () => void;
+  // Both needed to show the "old → new" line — an older history entry
+  // recorded before this field existed, or a version-less flatpak, omits
+  // one or both and the line is simply skipped.
+  oldVersion?: string | null;
+  newVersion?: string | null;
 }
 
 // One row of a past (or just-applied) auto-update: the app's own icon,
@@ -24,7 +34,11 @@ export const AutoUpdateAppRow: React.FC<AutoUpdateAppRowProps> = ({
   name,
   kind,
   color = "dark",
+  onPress,
+  oldVersion,
+  newVersion,
 }) => {
+  const { t } = useTranslation("apps_view");
   const [icon, setIcon] = useState<string | null>(null);
 
   useEffect(() => {
@@ -42,23 +56,54 @@ export const AutoUpdateAppRow: React.FC<AutoUpdateAppRowProps> = ({
   }, [id]);
 
   return (
-    <MediaRow
-      color={color}
-      media={
-        icon && (
-          <img
-            src={icon}
-            alt=""
-            style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
-          />
-        )
-      }
-      title={name}
-      details={
-        <div style={{ fontSize: 11, opacity: 0.75 }}>
-          {kind === "flatpak" ? "Flatpak" : "AppImage"}
-        </div>
-      }
-    />
+    // Forces the kind label back to its own color on focus/hover —
+    // Steam's native chrome otherwise dims it.
+    <div className="dck-au-row">
+      <style>{`
+        .dck-au-row:hover .dck-au-row-kind,
+        .dck-au-row:focus-within .dck-au-row-kind {
+          color: #9aa1a8 !important;
+        }
+      `}</style>
+      <MediaRow
+        color={color}
+        onPress={onPress}
+        onOKActionDescription={onPress ? t("open_app_detail") : undefined}
+        highlightOnFocus={false}
+        media={
+          icon && (
+            <img
+              src={icon}
+              alt=""
+              style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
+            />
+          )
+        }
+        title={name}
+        details={
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div className="dck-au-row-kind" style={{ fontSize: 11, color: "#9aa1a8" }}>
+              {kind === "flatpak" ? "Flatpak" : "AppImage"}
+            </div>
+            {oldVersion && newVersion && (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 4,
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: "#fff",
+                }}
+              >
+                {oldVersion}
+                <FiArrowRight size={10} />
+                {newVersion}
+              </div>
+            )}
+          </div>
+        }
+      />
+    </div>
   );
 };

@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FaSearch } from "react-icons/fa";
-import { FiClock } from "react-icons/fi";
-import { StatusCard } from "@moi952/decky-ui-kit";
+import { FiAlertTriangle, FiChevronRight, FiClock } from "react-icons/fi";
+import { ActionButton, StatusCard } from "@moi952/decky-ui-kit";
 
 import PanelSectionCustom from "../components/PanelSectionCustom";
 import { UpdateAllBar } from "../components/UpdateAllBar";
@@ -19,6 +19,7 @@ import { AppRow } from "../components/AppRow";
 import { useApps } from "../context/AppsContext";
 import { AppEntry } from "../types/apps";
 import { minutesUntil, sortApps } from "../utils/functions";
+import { requestErrorFilterOnOpen } from "../utils/allAppsErrorFilterFocus";
 
 interface HomeViewProps {
   // Detail-view routing itself lives in index.tsx's own App component,
@@ -26,9 +27,14 @@ interface HomeViewProps {
   // nothing above it with a real onBack to safely fall back to, unlike
   // every other view's own detail page).
   onOpenApp: (app: AppEntry) => void;
+  // For the discreet "N app(s) couldn't be checked" notice below — it
+  // just lands on the full list (see AllAppsView's own "Erreur" filter
+  // button for actually narrowing it down there), not a StatusCard of
+  // its own like the auto-update/up-to-date ones above it.
+  onOpenAllApps: () => void;
 }
 
-export const HomeView: React.FC<HomeViewProps> = ({ onOpenApp }) => {
+export const HomeView: React.FC<HomeViewProps> = ({ onOpenApp, onOpenAllApps }) => {
   const { t } = useTranslation("apps_view");
   const {
     flatpakApps,
@@ -41,7 +47,14 @@ export const HomeView: React.FC<HomeViewProps> = ({ onOpenApp }) => {
     githubRateLimitedUntil,
     updateApp,
     toggleExcluded,
+    hasUnseenAutoUpdate,
+    autoUpdateHistory,
   } = useApps();
+
+  // Mirrors AutoUpdateBanner's own "do I actually render anything" check —
+  // needed here too so the plain "up to date" card below doesn't say the
+  // same thing a second time right underneath it.
+  const showingAutoUpdateBanner = hasUnseenAutoUpdate && autoUpdateHistory.length > 0;
 
   const [collapsedFlatpak, setCollapsedFlatpak] = useState(false);
   const [collapsedGearlever, setCollapsedGearlever] = useState(false);
@@ -59,6 +72,9 @@ export const HomeView: React.FC<HomeViewProps> = ({ onOpenApp }) => {
   const updatableFlatpak = sortApps(updatable(flatpakApps));
   const updatableGearlever = sortApps(updatable(gearleverApps));
   const totalUpdatable = updatableFlatpak.length + updatableGearlever.length;
+  const checkFailedCount = [...flatpakApps, ...gearleverApps].filter(
+    (a) => a.update_check_failed
+  ).length;
   const initialLoading = loading && lastCheckedAt === null;
   const rateLimited =
     githubRateLimitedUntil !== null && githubRateLimitedUntil > Date.now();
@@ -74,8 +90,32 @@ export const HomeView: React.FC<HomeViewProps> = ({ onOpenApp }) => {
       )}
 
       <UpdateAllBar />
-      <AutoUpdateBanner />
+      <AutoUpdateBanner
+        alsoUpToDate={totalUpdatable === 0}
+        flatpakOnly={rateLimited}
+        onOpenApp={onOpenApp}
+      />
       <GearleverNotice installed={gearleverInstalled} />
+
+      {checkFailedCount > 0 && (
+        <div style={{ marginBottom: 8 }}>
+          <ActionButton
+            onClick={() => {
+              requestErrorFilterOnOpen();
+              onOpenAllApps();
+            }}
+            width="100%"
+          >
+            <div style={{ display: "flex", alignItems: "center", width: "100%" }}>
+              <FiAlertTriangle size={12} color="#f5a623" style={{ marginRight: 6, flexShrink: 0 }} />
+              <span style={{ flex: 1, textAlign: "left", fontSize: 11, opacity: 0.85 }}>
+                {t("check_failed_notice", { count: checkFailedCount })}
+              </span>
+              <FiChevronRight size={12} style={{ flexShrink: 0, opacity: 0.6 }} />
+            </div>
+          </ActionButton>
+        </div>
+      )}
 
       {totalUpdatableUnfiltered > 2 && (
         <SearchField
@@ -108,9 +148,14 @@ export const HomeView: React.FC<HomeViewProps> = ({ onOpenApp }) => {
           // (Flatpaks) and what's actually paused (AppImages), rather
           // than one merged claim glossing over the difference.
           <>
-            <div style={{ marginBottom: 12 }}>
-              <StatusCard variant="success" title={t("up_to_date_flatpak_only")} />
-            </div>
+            {!showingAutoUpdateBanner && (
+              // AutoUpdateBanner (above) already covers this via its own
+              // flatpakOnly-aware alsoUpToDate note when it's showing —
+              // repeating it here would just say the same thing twice.
+              <div style={{ marginBottom: 12 }}>
+                <StatusCard variant="success" title={t("up_to_date_flatpak_only")} />
+              </div>
+            )}
             <StatusCard
               variant="error"
               icon={<FiClock />}
@@ -120,6 +165,11 @@ export const HomeView: React.FC<HomeViewProps> = ({ onOpenApp }) => {
               })}
             />
           </>
+        ) : showingAutoUpdateBanner ? (
+          // AutoUpdateBanner (above) already says everything's up to date
+          // now, via its own alsoUpToDate note — showing this card too
+          // would just repeat that a second time right underneath it.
+          null
         ) : (
           <StatusCard variant="success" title={t("up_to_date")} />
         )

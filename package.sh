@@ -19,6 +19,15 @@ OUT_DIR="$PLUGIN_DIR/packages"
 
 command -v pnpm >/dev/null || die "pnpm not found"
 command -v zip >/dev/null || die "zip not found"
+command -v pip3 >/dev/null || die "pip3 not found"
+
+# Same source/pin as .github/workflows/build.yml and release.yml — kept in
+# sync by hand, since this is the only place a local `package.sh` run
+# actually gets the toolkit (it isn't committed to this repo).
+log "Vendoring decky-plugin-toolkit..."
+pip3 install --target "$PLUGIN_DIR/py_modules" --no-deps --upgrade \
+  "git+https://github.com/moi952/decky-plugin-toolkit.git@v0.1.0"
+find "$PLUGIN_DIR/py_modules" -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
 
 log "Building frontend..."
 ( cd "$PLUGIN_DIR" && pnpm run build )

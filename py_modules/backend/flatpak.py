@@ -21,7 +21,7 @@ import asyncio
 import os
 import re
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import decky
 
@@ -81,6 +81,7 @@ async def list_installed(scope: proc_env.Scope) -> List[Dict[str, Any]]:
             "version": version,
             "available_version": None,
             "has_update": False,
+            "update_check_failed": False,
             "scope": scope,
             "_active_commit": active,
             "_origin": origin,
@@ -106,7 +107,7 @@ async def _remote_info(scope: proc_env.Scope, origin: str, app_id: str) -> Dict[
     return info
 
 
-async def _has_real_update(scope: proc_env.Scope, app_id: str) -> bool:
+async def _has_real_update(scope: proc_env.Scope, app_id: str) -> Optional[bool]:
     """Confirms a commit mismatch is an actual update, by asking flatpak's
     own update logic rather than trusting the raw commit string compare in
     _check_update below. --no-deploy pulls the new commit into the local
@@ -121,6 +122,10 @@ async def _has_real_update(scope: proc_env.Scope, app_id: str) -> bool:
     for an app/remote pair the commit compare alone flagged as having an
     update — Discover, which goes through libflatpak's real update-check
     instead of a hand-rolled one, correctly showed no update there either.
+
+    Returns None (not False) when the command itself failed — that's
+    "couldn't tell", not a confirmed "nothing to update" (see
+    update_check_failed on the returned app dict).
     """
     code, out, err = await proc_env.run(
         ["flatpak", "update", scope_flag(scope), app_id,
@@ -128,23 +133,31 @@ async def _has_real_update(scope: proc_env.Scope, app_id: str) -> bool:
         scope, _LOG, timeout=120,
     )
     if code != 0:
-        return False
+        return None
     return "nothing to update" not in (out + err).lower()
 
 
 async def _check_update(
     scope: proc_env.Scope, app_id: str, active: str, origin: str
-) -> Optional[str]:
-    """Returns the available version string if an update exists, else None."""
+) -> Tuple[Optional[str], bool]:
+    """Returns (available_version_or_None, check_failed)."""
     if not active or not origin:
-        return None
+        return None, False
     info = await _remote_info(scope, origin, app_id)
+    if not info:
+        # _remote_info itself failed outright — can't tell "up to date"
+        # from "couldn't check", unlike the branches below which got a
+        # real answer either way.
+        return None, True
     remote_commit = info.get("commit", "")
     if not remote_commit or remote_commit.startswith(active):
-        return None
-    if not await _has_real_update(scope, app_id):
-        return None
-    return info.get("version") or ""
+        return None, False
+    confirmed = await _has_real_update(scope, app_id)
+    if confirmed is None:
+        return None, True
+    if not confirmed:
+        return None, False
+    return info.get("version") or "", False
 
 
 async def list_apps_with_updates(scope: proc_env.Scope) -> List[Dict[str, Any]]:
@@ -155,10 +168,11 @@ async def list_apps_with_updates(scope: proc_env.Scope) -> List[Dict[str, Any]]:
         active = app.pop("_active_commit", "")
         origin = app.pop("_origin", "")
         async with sem:
-            available = await _check_update(scope, app["app_id"], active, origin)
+            available, failed = await _check_update(scope, app["app_id"], active, origin)
         if available is not None:
             app["has_update"] = True
             app["available_version"] = available or None
+        app["update_check_failed"] = failed
 
     await asyncio.gather(*(_check(app) for app in apps))
     return apps

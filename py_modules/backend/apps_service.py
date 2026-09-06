@@ -45,6 +45,9 @@ _AUTO_UPDATE_HISTORY_SEEN_PATH = (
 _UPDATE_TOAST_ENABLED_PATH = (
     Path(decky.DECKY_PLUGIN_SETTINGS_DIR) / "update_toast_enabled.json"
 )
+# Disk mirror of _apps_cache, so "last checked" survives a backend
+# restart (plugin update, Decky reload, reboot) instead of resetting.
+_APPS_CACHE_PATH = Path(decky.DECKY_PLUGIN_SETTINGS_DIR) / "apps_cache.json"
 _AUTO_UPDATE_HISTORY_MAX_ENTRIES = 30
 
 # Minutes between automatic re-checks the frontend is allowed to run just
@@ -66,7 +69,26 @@ _DEFAULT_UPDATE_CHECK_INTERVAL_MINUTES = 60
 _DEFAULT_AUTO_UPDATE_INTERVAL_MINUTES = 720
 
 _gearlever_installed_cache: Optional[bool] = None
-_apps_cache: Optional[Dict[str, Any]] = None
+
+
+def _load_apps_cache() -> Optional[Dict[str, Any]]:
+    try:
+        if _APPS_CACHE_PATH.is_file():
+            return json.loads(_APPS_CACHE_PATH.read_text(encoding="utf-8"))
+    except Exception as e:
+        decky.logger.error(f"[apps_service] reading apps_cache.json: {e}")
+    return None
+
+
+def _save_apps_cache(cache: Dict[str, Any]) -> None:
+    try:
+        _APPS_CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
+        _APPS_CACHE_PATH.write_text(json.dumps(cache), encoding="utf-8")
+    except Exception as e:
+        decky.logger.error(f"[apps_service] writing apps_cache.json: {e}")
+
+
+_apps_cache: Optional[Dict[str, Any]] = _load_apps_cache()
 # Set for the duration of install_gearlever() below — lets a component that
 # remounted mid-install (closing/reopening the QAM tears down and recreates
 # the whole React tree, but this backend process and the flatpak install it
@@ -270,7 +292,7 @@ def get_auto_update_history() -> List[Dict[str, Any]]:
     return []
 
 
-def record_auto_update_history(apps: List[Dict[str, str]], ok: bool) -> None:
+def record_auto_update_history(apps: List[Dict[str, Any]], ok: bool) -> None:
     """Appends one entry (newest first, capped) — a permanent-ish log kept
     on its own, independent of whether the user has actually seen it (see
     get_auto_update_history_has_unseen/mark_auto_update_history_seen
@@ -427,6 +449,7 @@ async def list_apps(force: bool = False) -> Dict[str, Any]:
         "github_rate_limited_until": max(rate_limit_resets) if rate_limit_resets else None,
         "checked_at": time.time(),
     }
+    _save_apps_cache(_apps_cache)
     return {**_apps_cache, "from_cache": False, "network_available": True}
 
 

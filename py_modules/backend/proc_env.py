@@ -176,6 +176,15 @@ async def run(
         out, err = await asyncio.wait_for(proc.communicate(), timeout=timeout)
     except asyncio.TimeoutError:
         decky.logger.error(f"[{log_prefix}] timed out after {timeout}s: {' '.join(args)}")
+        # wait_for only stops *us* from waiting on communicate() — it
+        # never touches the child process itself, which otherwise keeps
+        # running as an orphan (e.g. a curl stuck on a stalled connection)
+        # long after this function has already returned to its caller.
+        try:
+            proc.kill()
+            await proc.wait()
+        except ProcessLookupError:
+            pass
         return -1, "", "timed out"
     except Exception as e:
         decky.logger.error(f"[{log_prefix}] failed to spawn: {e}")

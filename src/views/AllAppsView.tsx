@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Focusable, PanelSection, PanelSectionRow } from "@decky/ui";
 import { ActionButton, AnchoredDropdown } from "@moi952/decky-ui-kit";
 import { useTranslation } from "react-i18next";
-import { FiArrowLeft } from "react-icons/fi";
+import { FiAlertTriangle, FiArrowLeft, FiChevronRight, FiUpload } from "react-icons/fi";
 import { FaSearch } from "react-icons/fa";
 
 import PanelSectionCustom from "../components/PanelSectionCustom";
@@ -16,6 +16,7 @@ import {
 } from "../components/AppSectionHeader";
 import { useApps } from "../context/AppsContext";
 import { AppSortMode, sortApps } from "../utils/functions";
+import { consumeErrorFilterRequest } from "../utils/allAppsErrorFilterFocus";
 
 import { AppImageDetailView } from "./AppImageDetailView";
 import { FlatpakDetailView } from "./FlatpakDetailView";
@@ -44,6 +45,12 @@ export const AllAppsView: React.FC<AllAppsViewProps> = ({ onBack }) => {
 
   const [search, setSearch] = useState("");
   const [sortMode, setSortMode] = useState<AppSortMode>("update_first");
+  // Both active shows apps matching either filter, not just their
+  // intersection. filterError's initial value consumes the Home
+  // screen's "couldn't be checked" notice request, if that's how this
+  // view opened.
+  const [filterError, setFilterError] = useState(consumeErrorFilterRequest);
+  const [filterUpdate, setFilterUpdate] = useState(false);
   const [collapsedExcluded, setCollapsedExcluded] = useState(true);
   const [collapsedFlatpak, setCollapsedFlatpak] = useState(true);
   const [collapsedGearlever, setCollapsedGearlever] = useState(true);
@@ -75,9 +82,18 @@ export const AllAppsView: React.FC<AllAppsViewProps> = ({ onBack }) => {
 
   const searching = search.trim().length > 0;
   const q = search.toLowerCase();
-  const all = [...flatpakApps, ...gearleverApps].filter((a) =>
-    a.name.toLowerCase().includes(q)
+  const anyFilterActive = filterError || filterUpdate;
+  const matchesFilter = (a: (typeof flatpakApps)[number]) =>
+    !anyFilterActive ||
+    (filterError && a.update_check_failed) ||
+    (filterUpdate && a.has_update);
+  const all = [...flatpakApps, ...gearleverApps].filter(
+    (a) => a.name.toLowerCase().includes(q) && matchesFilter(a)
   );
+  // Unfiltered, so the notice stays accurate regardless of the current filter/search.
+  const checkFailedCount = [...flatpakApps, ...gearleverApps].filter(
+    (a) => a.update_check_failed
+  ).length;
 
   const excluded = sortApps(all.filter((a) => a.excluded), sortMode);
   const flatpakRest = sortApps(
@@ -89,20 +105,23 @@ export const AllAppsView: React.FC<AllAppsViewProps> = ({ onBack }) => {
     sortMode
   );
   const initialLoading = loading && lastCheckedAt === null;
-  const flatpakHasUpdate = flatpakRest.some((a) => a.has_update);
-  const gearleverHasUpdate = gearleverRest.some(
-    (a) => a.has_update || a.needs_update_source
-  );
+  // With a filter active, a non-empty list already means "has a match".
+  const flatpakShouldExpand = anyFilterActive
+    ? flatpakRest.length > 0
+    : flatpakRest.some((a) => a.has_update);
+  const gearleverShouldExpand = anyFilterActive
+    ? gearleverRest.length > 0
+    : gearleverRest.some((a) => a.has_update || a.needs_update_source);
 
   // Hooks must run unconditionally on every render — computed and
   // registered here, before the early returns below, not further down
   // alongside the rest of the list-derived values they depend on.
   useEffect(() => {
-    if (flatpakHasUpdate && !userToggledFlatpakRef.current) setCollapsedFlatpak(false);
-  }, [flatpakHasUpdate]);
+    if (flatpakShouldExpand && !userToggledFlatpakRef.current) setCollapsedFlatpak(false);
+  }, [flatpakShouldExpand]);
   useEffect(() => {
-    if (gearleverHasUpdate && !userToggledGearleverRef.current) setCollapsedGearlever(false);
-  }, [gearleverHasUpdate]);
+    if (gearleverShouldExpand && !userToggledGearleverRef.current) setCollapsedGearlever(false);
+  }, [gearleverShouldExpand]);
 
   if (viewingApp?.kind === "appimage") {
     return (
@@ -154,6 +173,20 @@ export const AllAppsView: React.FC<AllAppsViewProps> = ({ onBack }) => {
         <span style={{ fontWeight: 600 }}>{t("title")}</span>
       </Focusable>
 
+      {checkFailedCount > 0 && !filterError && (
+        <div style={{ marginBottom: 8 }}>
+          <ActionButton onClick={() => setFilterError(true)} width="100%">
+            <div style={{ display: "flex", alignItems: "center", width: "100%" }}>
+              <FiAlertTriangle size={12} color="#f5a623" style={{ marginRight: 6, flexShrink: 0 }} />
+              <span style={{ flex: 1, textAlign: "left", fontSize: 11, opacity: 0.85 }}>
+                {tApps("check_failed_notice", { count: checkFailedCount })}
+              </span>
+              <FiChevronRight size={12} style={{ flexShrink: 0, opacity: 0.6 }} />
+            </div>
+          </ActionButton>
+        </div>
+      )}
+
       <SearchField
         value={search}
         onChange={setSearch}
@@ -176,7 +209,9 @@ export const AllAppsView: React.FC<AllAppsViewProps> = ({ onBack }) => {
           <PanelSectionRow>
             <AnchoredDropdown
               label={t("sort_label")}
+              labelFontSize={13}
               size="small"
+              valueFontSize={11}
               highlightOnFocus={false}
               options={[
                 { value: "update_first", label: t("sort_update_first") },
@@ -185,7 +220,34 @@ export const AllAppsView: React.FC<AllAppsViewProps> = ({ onBack }) => {
               ]}
               selectedValue={sortMode}
               onChange={(v) => setSortMode(v as AppSortMode)}
+              bottomSeparator={false}
             />
+          </PanelSectionRow>
+          <PanelSectionRow>
+            <div style={{ marginTop: 2 }}>
+              <div style={{ fontSize: 13, color: "#fff", marginBottom: 6 }}>
+                {t("filter_label")}
+              </div>
+              <Focusable style={{ display: "flex", gap: 6 }} flow-children="horizontal">
+                <ActionButton
+                  size="small"
+                  pressed={filterError}
+                  onClick={() => setFilterError((v) => !v)}
+                >
+                  <FiAlertTriangle size={11} style={{ marginRight: 4 }} />
+                  {t("filter_error_button")}
+                </ActionButton>
+                <ActionButton
+                  size="small"
+                  pressed={filterUpdate}
+                  onClick={() => setFilterUpdate((v) => !v)}
+                >
+                  <FiUpload size={11} style={{ marginRight: 4 }} />
+                  {t("filter_update_button")}
+                </ActionButton>
+              </Focusable>
+              <div style={{ height: 1, marginTop: 12, background: "rgba(255, 255, 255, 0.08)" }} />
+            </div>
           </PanelSectionRow>
         </PanelSection>
       </div>

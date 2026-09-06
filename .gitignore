@@ -40,6 +40,12 @@ artifact/
 
 __pycache__/
 
+# Vendored at build time by package.sh / .github/workflows/build.yml &
+# release.yml — never committed, see py_modules/decky_plugin_toolkit's own
+# absence from git for why.
+/py_modules/decky_plugin_toolkit/
+/py_modules/decky_plugin_toolkit-*.dist-info/
+
 /.yalc
 yalc.lock
 

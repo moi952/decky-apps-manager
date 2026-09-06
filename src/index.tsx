@@ -8,8 +8,20 @@ import {
 import i18n from "i18next";
 import { Focusable, staticClasses } from "@decky/ui";
 import { FiList, FiSettings, FiShoppingBag } from "react-icons/fi";
+import { RiShoppingBag3Fill } from "react-icons/ri";
 import { ActionButton } from "@moi952/decky-ui-kit";
-import { useTranslation } from "react-i18next";
+
+import {
+  usePluginUpdate,
+  PluginUpdateBanner,
+  WhatsNewBanner,
+  OtherPluginsBanner,
+  getWhatsNewVersions,
+  pluginUpdateFocus,
+  otherPluginsFocus,
+  featureRequestFocus,
+  PluginUpdateInfo,
+} from "@moi952/decky-plugin-toolkit";
 
 import { BackHandler } from "./components/BackHandler";
 import { AppProvider } from "./context/AppProvider";
@@ -22,16 +34,8 @@ import { FlatpakSearchView } from "./views/FlatpakSearchView";
 import { AppImageSearchView } from "./views/AppImageSearchView";
 import { AppImageDetailView } from "./views/AppImageDetailView";
 import { FlatpakDetailView } from "./views/FlatpakDetailView";
-import { usePluginUpdate } from "./context/PluginUpdateContext";
-import { PluginUpdateBanner } from "./components/PluginUpdate";
-import { WhatsNewBanner } from "./components/WhatsNewBanner";
-import { OtherPluginsBanner } from "./components/OtherPluginsBanner";
-import { markOtherPluginsExpanded } from "./utils/otherPluginsFocus";
-import { markFeatureRequestFocus } from "./utils/featureRequestFocus";
 import { loadTranslations } from "./i18n";
 import projectConfig from "./project.config.json";
-
-import type { PluginUpdateInfo } from "./utils/githubReleases";
 
 type View = "home" | "settings" | "all" | "install" | "install-flatpak" | "install-appimage";
 
@@ -58,7 +62,6 @@ const App: React.FC = () => {
   // toggle values indefinitely.
   const [homeViewingId, setHomeViewingId] = useState<string | null>(null);
   const { info: pluginUpdateInfo } = usePluginUpdate();
-  const { t } = useTranslation("common");
   const {
     flatpakApps,
     gearleverApps,
@@ -150,25 +153,31 @@ const App: React.FC = () => {
         onSettings={() => setView("settings")}
         onAllApps={() => setView("all")}
         onInstall={() => setView("install")}
-        label={t("app_name")}
       />
       <PluginUpdateBanner
         info={pluginUpdateInfo}
-        onClick={() => setView("settings")}
+        onClick={() => {
+          pluginUpdateFocus.markExpanded();
+          setView("settings");
+        }}
       />
       <WhatsNewBanner
+        versions={getWhatsNewVersions()}
         onFeatureRequest={() => {
-          markFeatureRequestFocus();
+          featureRequestFocus.markExpanded();
           setView("settings");
         }}
       />
       <OtherPluginsBanner
         onOpenSettings={() => {
-          markOtherPluginsExpanded();
+          otherPluginsFocus.markExpanded();
           setView("settings");
         }}
       />
-      <HomeView onOpenApp={(app) => setHomeViewingId(app.id)} />
+      <HomeView
+        onOpenApp={(app) => setHomeViewingId(app.id)}
+        onOpenAllApps={() => setView("all")}
+      />
     </BackHandler>
   );
 };
@@ -177,17 +186,20 @@ const PanelHeader: React.FC<{
   onSettings: () => void;
   onAllApps: () => void;
   onInstall: () => void;
-  label: string;
-}> = ({ onSettings, onAllApps, onInstall, label }) => (
+}> = ({ onSettings, onAllApps, onInstall }) => (
   <div
     style={{
       display: "flex",
       alignItems: "center",
-      justifyContent: "space-between",
+      // The plugin's own name used to sit to the left of these icons —
+      // removed, Decky's own panel header above already shows it. "Space
+      // between" a label and this icon group no longer means anything
+      // with just the group left, so this keeps it right-aligned (where
+      // it already visually sat) instead of collapsing to flex-start.
+      justifyContent: "flex-end",
       padding: "0 16px 8px",
     }}
   >
-    <span style={{ fontWeight: 600 }}>{label}</span>
     <Focusable style={{ display: "flex", gap: 4 }} flow-children="horizontal">
       <ActionButton onClick={onInstall}>
         <FiShoppingBag size={14} />
@@ -205,7 +217,8 @@ const PanelHeader: React.FC<{
 export default definePlugin(() => {
   loadTranslations();
 
-  // Fired by Plugin._main() on the Python side (see plugin_updater.py) as
+  // Fired by Plugin._main() on the Python side (decky_plugin_toolkit's
+  // PluginUpdaterMixin) as
   // soon as Decky loads this plugin — not gated behind the user ever
   // opening its panel, unlike the frontend's own on-mount check.
   const updateListener = addEventListener(
@@ -234,7 +247,7 @@ export default definePlugin(() => {
         <App />
       </AppProvider>
     ),
-    icon: <FiShoppingBag />,
+    icon: <RiShoppingBag3Fill />,
     onDismount() {
       removeEventListener("plugin_update_available", updateListener);
     },

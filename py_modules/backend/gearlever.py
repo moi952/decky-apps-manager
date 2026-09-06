@@ -281,6 +281,10 @@ async def list_installed() -> List[Dict[str, Any]]:
             "release_url": None,
             "github_rate_limited_until": None,
             "has_update": False,
+            # AppImages don't have an equivalent "the check itself broke"
+            # case yet (see flatpak.py's own field of the same name, for
+            # an OCI remote whose signature verification is broken).
+            "update_check_failed": False,
             "needs_update_source": manager is None,
             "update_manager": manager,
             "update_manager_config": config,

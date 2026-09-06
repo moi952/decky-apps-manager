@@ -1,11 +1,9 @@
 {
   "common": {
-    "app_name": "Apps Manager",
     "cancel": "Cancel"
   },
   "settings_view": {
     "settings": "Settings",
-    "whats_new_history": "Update history",
     "update_check_section_title": "Check on Home open",
     "update_check_interval_label": "Check frequency",
     "update_check_interval_description": "How often opening the panel silently re-verifies a cached result, and how often the background check itself runs.",
@@ -26,42 +24,9 @@
     "auto_update_history_label": "Auto-update history",
     "auto_update_history_empty": "No automatic update has run yet",
     "auto_update_history_ok": "Succeeded",
-    "auto_update_history_failed": "Some updates failed",
-    "github_section_title": "GitHub",
-    "feature_request_button": "Request a feature",
-    "feature_request_hint": "Scan with your phone, or press to open in your browser",
-    "bug_report_button": "Report a bug",
-    "bug_report_hint": "Scan with your phone, or press to open in your browser",
-    "support_section_title": "Support",
-    "kofi_button": "Support me on Ko-fi",
-    "kofi_hint": "Scan with your phone, or press to open in your browser",
-    "other_plugins_section_title": "My other plugins",
-    "kofi_description": "This plugin is free and always will be. If you'd still like to lend a hand, every coffee helps."
-  },
-  "plugin_update": {
-    "banner": "Plugin update available: {{version}}",
-    "section_label": "Plugin update",
-    "current": "Current version: {{version}}",
-    "latest": "Latest version: {{version}}",
-    "up_to_date": "Plugin is up to date",
-    "check_failed": "Couldn't check for updates right now",
-    "view_release": "View release",
-    "check_button": "Check for updates",
-    "checking": "Checking…",
-    "install_button": "Install {{version}}",
-    "installing": "Installing…",
-    "downloading": "Downloading…",
-    "install_failed_title": "Plugin update failed",
-    "no_backend": "Decky's installer isn't reachable right now.",
-    "install_timeout": "No response from Decky Loader — the install may have stalled. Try again.",
-    "choose_version_label": "Install a specific version",
-    "no_releases": "No releases found",
-    "already_installed": "Already installed ({{version}})"
+    "auto_update_history_failed": "Some updates failed"
   },
   "whats_new": {
-    "dismiss": "Got it",
-    "older": "Older",
-    "newer": "Newer",
     "v0_1_0": {
       "title": "What's new in 0.1.0",
       "items": [
@@ -85,13 +50,27 @@
         "Several reliability fixes: app status now updates instantly when you toggle something, and update checks no longer get it wrong when the network isn't ready yet"
       ]
     },
-    "support_note": "If you'd like to support the plugin's development, it's always welcome — see the Support section in Settings."
+    "v0_3_0": {
+      "title": "What's new in 0.3.0",
+      "items": [
+        "Update checks no longer hang forever if a network request stalls — they now time out and give up cleanly instead",
+        "Apps that couldn't actually be checked are now flagged clearly, instead of silently looking up to date — filter for them with the new \"Error\" button in All apps",
+        "Tapping the plugin's own update notification now takes you straight to that section in Settings, already expanded",
+        "Times now follow your own language's convention (12-hour with AM/PM in English, 24-hour in French, ...) instead of always showing 24-hour",
+        "Auto-update history in Settings now shows each app's version, before and after",
+        "Fixed a status message that could claim everything was up to date while AppImage checks were still paused by GitHub's rate limit",
+        "The plugin's interface is now available in 13 more languages: German, Spanish, Italian, Japanese, Korean, Dutch, Polish, Portuguese (Brazil & Portugal), Russian, Turkish, Ukrainian, and Simplified Chinese"
+      ]
+    }
   },
   "apps_view": {
     "section_label": "Apps update",
     "update": "Update",
     "updating": "Updating…",
     "update_failed": "Update failed",
+    "update_check_failed_label": "Couldn't verify",
+    "open_app_detail": "Open app details",
+    "check_failed_notice": "{{count}} app(s) couldn't be checked",
     "uninstall_failed": "Removal failed",
     "needs_update_source": "No update source configured",
     "error_title": "Apps update",
@@ -138,6 +117,9 @@
     "excluded_section": "Ignored",
     "sort_label": "Sort:",
     "sort_update_first": "Updates first",
+    "filter_label": "Filter:",
+    "filter_error_button": "Error",
+    "filter_update_button": "Updates",
     "sort_alpha_asc": "A → Z",
     "sort_alpha_desc": "Z → A"
   },
@@ -156,7 +138,7 @@
     "field_url": "URL",
     "saved": "Update source saved",
     "info_version": "Version",
-    "info_available_version": "Available version",
+    "info_status": "Status",
     "update_available": "Update available",
     "info_source": "Source",
     "info_source_embedded": "Embedded in the AppImage",
@@ -192,7 +174,7 @@
   },
   "flatpak_detail_view": {
     "info_version": "Version",
-    "info_available_version": "Available version",
+    "info_status": "Status",
     "info_scope": "Scope",
     "info_app_id": "App ID",
     "scope_system": "System-wide",
@@ -250,14 +232,5 @@
     "appimage_title": "AppImage",
     "appimage_description": "Search AppImageHub's public catalog, installed via Gearlever.",
     "appimage_requires_gearlever": "Requires Gearlever — install it from the home screen first."
-  },
-  "other_plugins": {
-    "banner_title_one": "New plugin available!",
-    "banner_title_other": "New plugins available!",
-    "open_settings": "Go to Settings",
-    "install_latest": "Install latest version",
-    "installing": "Installing…",
-    "install_failed": "Couldn't fetch the latest release. Try again later.",
-    "view_on_github": "View on GitHub"
   }
 }

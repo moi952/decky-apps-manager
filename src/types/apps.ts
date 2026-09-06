@@ -7,6 +7,10 @@ export interface AppEntry {
   version: string | null;
   available_version: string | null;
   has_update: boolean;
+  // The last check attempt itself failed (a broken/misconfigured remote,
+  // e.g. a signature error) — distinct from a confirmed "no update
+  // available". Flatpak only for now; always false for AppImages.
+  update_check_failed: boolean;
   excluded: boolean;
   // Stays visible/notified about, but the auto-update loop won't touch
   // it on its own — distinct from `excluded`, which hides it entirely.
@@ -59,6 +63,8 @@ export interface AutoUpdateHistoryAppSummary {
   id: string;
   name: string;
   kind: AppKind;
+  old_version?: string | null;
+  new_version?: string | null;
 }
 
 // One past run of the background auto-update loop — kept as a permanent

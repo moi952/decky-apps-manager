@@ -54,6 +54,7 @@ export const AppRow: React.FC<AppRowProps> = ({
       color="transparent"
       bottomSeparator
       onPress={onRowPress}
+      onOKActionDescription={onRowPress ? t("open_app_detail") : undefined}
       collapsedByDefault={collapsible}
       media={
         icon && (
@@ -84,6 +85,11 @@ export const AppRow: React.FC<AppRowProps> = ({
           {status === "error" && (
             <div style={{ fontSize: 10, color: "#ef4444" }}>
               {t("update_failed")}
+            </div>
+          )}
+          {app.update_check_failed && (
+            <div style={{ fontSize: 10, color: "#ef4444" }}>
+              {t("update_check_failed_label")}
             </div>
           )}
           {app.needs_update_source && mode === "list" && (

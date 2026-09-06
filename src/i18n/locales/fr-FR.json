@@ -1,11 +1,9 @@
 {
   "common": {
-    "app_name": "Apps Manager",
     "cancel": "Annuler"
   },
   "settings_view": {
     "settings": "Paramètres",
-    "whats_new_history": "Historique des mises à jour",
     "update_check_section_title": "Vérification à l'ouverture de l'accueil",
     "update_check_interval_label": "Fréquence de vérification",
     "update_check_interval_description": "À quelle fréquence l'ouverture du panneau revérifie discrètement un résultat en cache, et à quelle fréquence la vérification en arrière-plan elle-même tourne.",
@@ -26,42 +24,9 @@
     "auto_update_history_label": "Historique des mises à jour auto",
     "auto_update_history_empty": "Aucune mise à jour automatique n'a encore eu lieu",
     "auto_update_history_ok": "Réussie",
-    "auto_update_history_failed": "Certaines mises à jour ont échoué",
-    "github_section_title": "GitHub",
-    "feature_request_button": "Demander une fonctionnalité",
-    "feature_request_hint": "Scanne avec ton téléphone, ou appuie pour ouvrir dans le navigateur",
-    "bug_report_button": "Signaler un bug",
-    "bug_report_hint": "Scanne avec ton téléphone, ou appuie pour ouvrir dans le navigateur",
-    "support_section_title": "Soutien",
-    "kofi_button": "Me soutenir sur Ko-fi",
-    "kofi_hint": "Scannez avec votre téléphone, ou appuyez pour ouvrir dans le navigateur",
-    "other_plugins_section_title": "Mes autres plugins",
-    "kofi_description": "Ce plugin est gratuit et le restera. Si tu veux quand même donner un coup de pouce, chaque café compte."
-  },
-  "plugin_update": {
-    "banner": "Mise à jour du plugin disponible : {{version}}",
-    "section_label": "Mise à jour du plugin",
-    "current": "Version actuelle : {{version}}",
-    "latest": "Dernière version : {{version}}",
-    "up_to_date": "Le plugin est à jour",
-    "check_failed": "Impossible de vérifier les mises à jour pour le moment",
-    "view_release": "Voir la version",
-    "check_button": "Vérifier les mises à jour",
-    "checking": "Vérification…",
-    "install_button": "Installer {{version}}",
-    "installing": "Installation…",
-    "downloading": "Téléchargement…",
-    "install_failed_title": "Échec de la mise à jour du plugin",
-    "no_backend": "L'installateur de Decky n'est pas accessible pour le moment.",
-    "install_timeout": "Aucune réponse de Decky Loader — l'installation a peut-être échoué. Réessayez.",
-    "choose_version_label": "Installer une version spécifique",
-    "no_releases": "Aucune version trouvée",
-    "already_installed": "Déjà installé ({{version}})"
+    "auto_update_history_failed": "Certaines mises à jour ont échoué"
   },
   "whats_new": {
-    "dismiss": "Compris",
-    "older": "Plus ancien",
-    "newer": "Plus récent",
     "v0_1_0": {
       "title": "Nouveautés de la version 0.1.0",
       "items": [
@@ -85,13 +50,27 @@
         "Plusieurs corrections de fiabilité : l'état des apps se met à jour instantanément après une action, et la vérification des mises à jour ne se trompe plus quand le réseau n'est pas encore prêt"
       ]
     },
-    "support_note": "Si vous avez envie de soutenir le développement du plugin, c'est toujours avec plaisir — direction la section Support dans les paramètres."
+    "v0_3_0": {
+      "title": "Nouveautés de la version 0.3.0",
+      "items": [
+        "Les vérifications de mise à jour ne restent plus bloquées indéfiniment si une requête réseau traîne — elles s'arrêtent et abandonnent proprement au lieu de rester coincées",
+        "Les apps qui n'ont pas pu être vérifiées sont maintenant signalées clairement, au lieu de sembler silencieusement à jour — un bouton \"Erreur\" dans Toutes les apps permet de les retrouver",
+        "Appuyer sur la notification de mise à jour du plugin t'emmène directement à la bonne section des paramètres, déjà dépliée",
+        "Les heures suivent maintenant la convention de ta langue (12h avec AM/PM en anglais, 24h en français, ...) au lieu d'afficher systématiquement du 24h",
+        "L'historique des mises à jour automatiques dans les paramètres affiche maintenant la version de chaque app, avant et après",
+        "Correction d'un message qui pouvait dire que tout était à jour alors que la vérification des AppImages était encore en pause à cause de la limite GitHub",
+      "L'interface du plugin est maintenant disponible dans 13 langues supplémentaires : allemand, espagnol, italien, japonais, coréen, néerlandais, polonais, portugais (Brésil et Portugal), russe, turc, ukrainien et chinois simplifié"
+      ]
+    }
   },
   "apps_view": {
     "section_label": "Mises à jour des apps",
     "update": "Mettre à jour",
     "updating": "Mise à jour…",
     "update_failed": "Échec de la mise à jour",
+    "update_check_failed_label": "Vérification impossible",
+    "open_app_detail": "Ouvrir la fiche de l'app",
+    "check_failed_notice": "{{count}} app(s) n'ont pas pu être vérifiées",
     "uninstall_failed": "Échec de la suppression",
     "needs_update_source": "Aucune source de mise à jour configurée",
     "error_title": "Mises à jour des apps",
@@ -138,6 +117,9 @@
     "excluded_section": "Ignorées",
     "sort_label": "Trier :",
     "sort_update_first": "Mises à jour d'abord",
+    "filter_label": "Filtrer :",
+    "filter_error_button": "Erreur",
+    "filter_update_button": "MAJ",
     "sort_alpha_asc": "A → Z",
     "sort_alpha_desc": "Z → A"
   },
@@ -156,7 +138,7 @@
     "field_url": "URL",
     "saved": "Source de mise à jour enregistrée",
     "info_version": "Version",
-    "info_available_version": "Version disponible",
+    "info_status": "Statut",
     "update_available": "Mise à jour disponible",
     "info_source": "Source",
     "info_source_embedded": "Embarquée dans l'AppImage",
@@ -192,7 +174,7 @@
   },
   "flatpak_detail_view": {
     "info_version": "Version",
-    "info_available_version": "Version disponible",
+    "info_status": "Statut",
     "info_scope": "Portée",
     "info_app_id": "ID de l'app",
     "scope_system": "Système",
@@ -250,14 +232,5 @@
     "appimage_title": "AppImage",
     "appimage_description": "Recherchez dans le catalogue public d'AppImageHub, installée via Gearlever.",
     "appimage_requires_gearlever": "Nécessite Gearlever — installez-le depuis l'écran d'accueil d'abord."
-  },
-  "other_plugins": {
-    "banner_title_one": "Nouveau plugin disponible !",
-    "banner_title_other": "Nouveaux plugins disponibles !",
-    "open_settings": "Aller aux paramètres",
-    "install_latest": "Installer la dernière version",
-    "installing": "Installation…",
-    "install_failed": "Impossible de récupérer la dernière version. Réessaie plus tard.",
-    "view_on_github": "Voir sur GitHub"
   }
 }
