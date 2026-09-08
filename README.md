@@ -10,15 +10,11 @@ Apps Manager keeps track of every Flatpak app you have installed (including the 
 
 > 🙏 **Thanks to [Gearlever](https://github.com/mijorus/gearlever)** by [mijorus](https://github.com/mijorus) — the AppImage side of this plugin runs entirely on top of it.
 
-### ✨ New in 0.3.0
+### ✨ New in 0.4.0
 
-- Update checks no longer hang forever if a network request stalls — they now time out and give up cleanly instead
-- Apps that couldn't actually be checked are now flagged clearly, instead of silently looking up to date — filter for them with the new "Error" button in All apps
-- Tapping the plugin's own update notification now takes you straight to that section in Settings, already expanded
-- Times now follow your own language's convention (12-hour with AM/PM in English, 24-hour in French, ...) instead of always showing 24-hour
-- Auto-update history in Settings now shows each app's version, before and after
-- Fixed a status message that could claim everything was up to date while AppImage checks were still paused by GitHub's rate limit
-- The plugin's interface is now available in 13 more languages: German, Spanish, Italian, Japanese, Korean, Dutch, Polish, Portuguese (Brazil & Portugal), Russian, Turkish, Ukrainian, and Simplified Chinese
+- Add an installed Flatpak or AppImage as a Steam shortcut, or remove it — with detection for one that's already there, even added by hand
+- Gear Lever: fixed several detection bugs — installing or uninstalling it (via the plugin, Discover, or the command line) is now reliably reflected in the apps list and the install notice, even across a Steam restart
+- Reworked the Gear Lever install notice: same size as other cards, horizontally navigable buttons, and a progress bar that no longer overflows
 
 ---
 
