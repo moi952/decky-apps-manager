@@ -61,6 +61,14 @@
         "Fixed a status message that could claim everything was up to date while AppImage checks were still paused by GitHub's rate limit",
         "The plugin's interface is now available in 13 more languages: German, Spanish, Italian, Japanese, Korean, Dutch, Polish, Portuguese (Brazil & Portugal), Russian, Turkish, Ukrainian, and Simplified Chinese"
       ]
+    },
+    "v0_4_0": {
+      "title": "What's new in 0.4.0",
+      "items": [
+        "Add an installed Flatpak or AppImage as a Steam shortcut, or remove it — with detection for one that's already there, even added by hand",
+        "Gear Lever: fixed several detection bugs — installing or uninstalling it (via the plugin, Discover, or the command line) is now reliably reflected in the apps list and the install notice, even across a Steam restart",
+        "Reworked the Gear Lever install notice: same size as other cards, horizontally navigable buttons, and a progress bar that no longer overflows"
+      ]
     }
   },
   "apps_view": {
@@ -109,7 +117,15 @@
     "auto_update_unskip_button": "Allow auto-update",
     "checking_updates": "Checking for updates…",
     "github_rate_limit_title": "AppImage update checks paused",
-    "github_rate_limit_description": "GitHub limits how often we can check for updates anonymously. Try again in {{minutes}} min."
+    "github_rate_limit_description": "GitHub limits how often we can check for updates anonymously. Try again in {{minutes}} min.",
+    "steam_shortcut_add_button": "Add as Steam shortcut",
+    "steam_shortcut_remove_button": "Remove Steam shortcut",
+    "steam_shortcut_add_failed_toast": "Couldn't add this as a Steam shortcut",
+    "steam_shortcut_restart_title": "Restart Steam",
+    "steam_shortcut_restart_added_body": "Restart Steam for the new shortcut to show up in your library.",
+    "steam_shortcut_restart_removed_body": "Restart Steam for the removed shortcut to disappear from your library.",
+    "steam_shortcut_restart_btn": "Restart Steam",
+    "steam_shortcut_restart_later_btn": "Not now"
   },
   "all_apps_view": {
     "title": "All apps",
@@ -156,7 +172,7 @@
     "update_success_title": "Update installed",
     "update_error_title": "Update failed",
     "update_error_description": "Check your internet connection and try again.",
-    "remove": "Remove",
+    "remove": "Uninstall",
     "removing": "Removing…",
     "remove_confirm_description": "Remove {{name}}? This uninstalls it completely.",
     "remove_success_title": "Removed",
@@ -182,7 +198,7 @@
     "update_success_title": "Update installed",
     "update_error_title": "Update failed",
     "update_error_description": "Check your internet connection and try again.",
-    "remove": "Remove",
+    "remove": "Uninstall",
     "removing": "Removing…",
     "remove_confirm_description": "Remove {{name}}? This uninstalls it completely.",
     "remove_success_title": "Removed",

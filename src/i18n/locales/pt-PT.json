@@ -61,6 +61,14 @@
         "Corrigida uma mensagem de estado que podia afirmar que tudo estava atualizado enquanto a verificação de AppImages ainda estava em pausa devido ao limite de pedidos do GitHub",
         "A interface do plugin está agora disponível em mais 13 idiomas: alemão, espanhol, italiano, japonês, coreano, neerlandês, polaco, português (Brasil e Portugal), russo, turco, ucraniano e chinês simplificado"
       ]
+    },
+    "v0_4_0": {
+      "title": "Novidades da versão 0.4.0",
+      "items": [
+        "Adiciona um Flatpak ou AppImage instalado como atalho da Steam, ou remove-o — com deteção caso já tenha sido adicionado, mesmo manualmente",
+        "Gear Lever: corrigidos vários erros de deteção — instalá-lo ou desinstalá-lo (pelo plugin, pela Discover ou pela linha de comandos) reflete-se agora de forma fiável na lista de aplicações e no aviso de instalação, mesmo depois de reiniciar a Steam",
+        "Aviso de instalação do Gear Lever redesenhado: mesmo tamanho que os outros cartões, botões navegáveis horizontalmente, e uma barra de progresso que já não transborda"
+      ]
     }
   },
   "apps_view": {
@@ -109,7 +117,15 @@
     "auto_update_unskip_button": "Permitir atualização automática",
     "checking_updates": "A verificar atualizações…",
     "github_rate_limit_title": "Verificação de AppImages em pausa",
-    "github_rate_limit_description": "O GitHub limita a frequência com que podemos verificar atualizações de forma anónima. Tenta novamente dentro de {{minutes}} min."
+    "github_rate_limit_description": "O GitHub limita a frequência com que podemos verificar atualizações de forma anónima. Tenta novamente dentro de {{minutes}} min.",
+    "steam_shortcut_add_button": "Adicionar como atalho da Steam",
+    "steam_shortcut_remove_button": "Remover atalho da Steam",
+    "steam_shortcut_add_failed_toast": "Não foi possível adicionar este atalho da Steam",
+    "steam_shortcut_restart_title": "Reiniciar a Steam",
+    "steam_shortcut_restart_added_body": "Reinicia a Steam para que o novo atalho apareça na tua biblioteca.",
+    "steam_shortcut_restart_removed_body": "Reinicia a Steam para que o atalho removido desapareça da tua biblioteca.",
+    "steam_shortcut_restart_btn": "Reiniciar a Steam",
+    "steam_shortcut_restart_later_btn": "Agora não"
   },
   "all_apps_view": {
     "title": "Todas as aplicações",
@@ -156,7 +172,7 @@
     "update_success_title": "Atualização instalada",
     "update_error_title": "Falha na atualização",
     "update_error_description": "Verifica a tua ligação à internet e tenta novamente.",
-    "remove": "Remover",
+    "remove": "Desinstalar",
     "removing": "A remover…",
     "remove_confirm_description": "Remover {{name}}? Isto desinstala-a por completo.",
     "remove_success_title": "Removida",
@@ -182,7 +198,7 @@
     "update_success_title": "Atualização instalada",
     "update_error_title": "Falha na atualização",
     "update_error_description": "Verifica a tua ligação à internet e tenta novamente.",
-    "remove": "Remover",
+    "remove": "Desinstalar",
     "removing": "A remover…",
     "remove_confirm_description": "Remover {{name}}? Isto desinstala-a por completo.",
     "remove_success_title": "Removida",

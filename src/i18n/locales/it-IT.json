@@ -61,6 +61,14 @@
         "Corretto un messaggio di stato che poteva dichiarare tutto aggiornato mentre il controllo delle AppImage era ancora in pausa per il limite di richieste di GitHub",
         "L'interfaccia del plugin è ora disponibile in altre 13 lingue: tedesco, spagnolo, italiano, giapponese, coreano, olandese, polacco, portoghese (Brasile e Portogallo), russo, turco, ucraino e cinese semplificato"
       ]
+    },
+    "v0_4_0": {
+      "title": "Novità della versione 0.4.0",
+      "items": [
+        "Aggiungi un Flatpak o AppImage installato come collegamento Steam, o rimuovilo — con rilevamento se è già presente, anche se aggiunto a mano",
+        "Gear Lever: corretti diversi bug di rilevamento — installarlo o disinstallarlo (dal plugin, da Discover o da riga di comando) ora si riflette in modo affidabile nell'elenco delle app e nell'avviso di installazione, anche dopo un riavvio di Steam",
+        "Rivisto l'avviso di installazione di Gear Lever: stessa dimensione delle altre schede, pulsanti navigabili orizzontalmente e una barra di avanzamento che non trabocca più"
+      ]
     }
   },
   "apps_view": {
@@ -109,7 +117,15 @@
     "auto_update_unskip_button": "Consenti aggiornamento automatico",
     "checking_updates": "Ricerca aggiornamenti…",
     "github_rate_limit_title": "Controllo AppImage in pausa",
-    "github_rate_limit_description": "GitHub limita la frequenza dei controlli anonimi. Riprova tra {{minutes}} min."
+    "github_rate_limit_description": "GitHub limita la frequenza dei controlli anonimi. Riprova tra {{minutes}} min.",
+    "steam_shortcut_add_button": "Aggiungi come collegamento Steam",
+    "steam_shortcut_remove_button": "Rimuovi collegamento Steam",
+    "steam_shortcut_add_failed_toast": "Impossibile aggiungere questo collegamento Steam",
+    "steam_shortcut_restart_title": "Riavvia Steam",
+    "steam_shortcut_restart_added_body": "Riavvia Steam perché il nuovo collegamento compaia nella tua libreria.",
+    "steam_shortcut_restart_removed_body": "Riavvia Steam perché il collegamento rimosso scompaia dalla tua libreria.",
+    "steam_shortcut_restart_btn": "Riavvia Steam",
+    "steam_shortcut_restart_later_btn": "Non ora"
   },
   "all_apps_view": {
     "title": "Tutte le app",
@@ -156,7 +172,7 @@
     "update_success_title": "Aggiornamento installato",
     "update_error_title": "Aggiornamento non riuscito",
     "update_error_description": "Controlla la tua connessione a internet e riprova.",
-    "remove": "Rimuovi",
+    "remove": "Disinstalla",
     "removing": "Rimozione…",
     "remove_confirm_description": "Rimuovere {{name}}? Questo la disinstallerà completamente.",
     "remove_success_title": "Rimossa",
@@ -182,7 +198,7 @@
     "update_success_title": "Aggiornamento installato",
     "update_error_title": "Aggiornamento non riuscito",
     "update_error_description": "Controlla la tua connessione a internet e riprova.",
-    "remove": "Rimuovi",
+    "remove": "Disinstalla",
     "removing": "Rimozione…",
     "remove_confirm_description": "Rimuovere {{name}}? Questo la disinstallerà completamente.",
     "remove_success_title": "Rimossa",

@@ -1,16 +1,20 @@
 import React, { useEffect, useRef, useState } from "react";
-import { ProgressBarWithInfo } from "@decky/ui";
+import { Focusable } from "@decky/ui";
 import { call, toaster } from "@decky/api";
-import { ActionButton } from "@moi952/decky-ui-kit";
+import { ActionButton, StatusCard } from "@moi952/decky-ui-kit";
 import { useTranslation } from "react-i18next";
 
 import { useApps } from "../context/AppsContext";
 
-// How often we poll the backend for "is an install still running?" after
-// finding one already in progress on mount (see the effect below) — no
-// push event exists for this, so a plain poll is the simplest option for
-// a rare, bounded-duration situation (install_gearlever() times out well
-// under a minute either way).
+// How often we poll "is an install still running?" — both to recover an
+// install already in progress on mount, and (see the effect that starts
+// it right after clicking Install below) as the one thing that reliably
+// notices the install actually finished. Confirmed on-device: awaiting
+// install_gearlever()'s own promise directly and refreshing off of that
+// alone isn't reliable — it can go quiet even though the underlying
+// flatpak transaction (confirmed independently, no hung/zombie process
+// left anywhere) genuinely completed. Polling a separate, idempotent
+// "is it still busy" query sidesteps whatever that promise's own issue is.
 const INSTALLING_POLL_MS = 2000;
 
 interface GearleverNoticeProps {
@@ -35,36 +39,48 @@ export const GearleverNotice: React.FC<GearleverNoticeProps> = ({
   // which would otherwise re-run (and restart the poll) constantly.
   const refreshRef = useRef(refresh);
   refreshRef.current = refresh;
+  const pollIdRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
+  const unmountedRef = useRef(false);
+
+  const refreshSeen = () => {
+    call<[], boolean>("get_gearlever_notice_seen").then((s) => {
+      if (!unmountedRef.current) setSeen(s);
+    });
+  };
+
+  // Idempotent — safe to call again while an existing poll is already
+  // running (the mount effect finding one in progress, then the user
+  // also pressing Install, shouldn't ever end up with two intervals).
+  const startInstallingPoll = () => {
+    if (pollIdRef.current) return;
+    pollIdRef.current = setInterval(async () => {
+      const stillBusy = await call<[], boolean>("is_gearlever_installing");
+      if (unmountedRef.current || stillBusy) return;
+      clearInterval(pollIdRef.current);
+      pollIdRef.current = undefined;
+      setInstalling(false);
+      await refreshRef.current();
+      refreshSeen();
+    }, INSTALLING_POLL_MS);
+  };
+
+  useEffect(() => {
+    unmountedRef.current = false;
+    return () => {
+      unmountedRef.current = true;
+      if (pollIdRef.current) clearInterval(pollIdRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (installed !== false) return;
-    let cancelled = false;
-    let pollId: ReturnType<typeof setInterval> | undefined;
-
-    call<[], boolean>("get_gearlever_notice_seen").then((s) => {
-      if (!cancelled) setSeen(s);
-    });
-
+    refreshSeen();
     call<[], boolean>("is_gearlever_installing").then((busy) => {
-      if (cancelled) return;
+      if (unmountedRef.current) return;
       setInstalling(busy);
-      if (!busy) return;
-      pollId = setInterval(async () => {
-        const stillBusy = await call<[], boolean>("is_gearlever_installing");
-        if (cancelled || stillBusy) return;
-        if (pollId) clearInterval(pollId);
-        setInstalling(false);
-        await refreshRef.current();
-        call<[], boolean>("get_gearlever_notice_seen").then((s) => {
-          if (!cancelled) setSeen(s);
-        });
-      }, INSTALLING_POLL_MS);
+      if (busy) startInstallingPoll();
     });
-
-    return () => {
-      cancelled = true;
-      if (pollId) clearInterval(pollId);
-    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [installed]);
 
   if (installed !== false || seen) return null;
@@ -74,58 +90,94 @@ export const GearleverNotice: React.FC<GearleverNoticeProps> = ({
     setSeen(true);
   };
 
-  const install = async () => {
+  const install = () => {
     setInstalling(true);
-    try {
-      const ok = await call<[], boolean>("install_gearlever");
-      toaster.toast({
-        title: t("gearlever_notice_title"),
-        body: ok
-          ? t("install_gearlever_success")
-          : t("install_gearlever_failed"),
+    // Started immediately, in parallel with the call below rather than
+    // chained after it — this is what actually guarantees a refresh
+    // happens once the install is done, independent of whether that
+    // call's own promise ever resolves.
+    startInstallingPoll();
+    call<[], boolean>("install_gearlever")
+      .then((ok) => {
+        toaster.toast({
+          title: "Gearlever",
+          body: ok ? t("install_gearlever_success") : t("install_gearlever_failed"),
+        });
+      })
+      .catch((e) => {
+        console.error("[GearleverNotice] install_gearlever failed", e);
+        toaster.toast({ title: "Gearlever", body: t("install_gearlever_failed") });
       });
-      if (ok) await refresh();
-    } finally {
-      setInstalling(false);
-      dismiss();
-    }
   };
 
   return (
-    <div
-      style={{
-        padding: 10,
-        margin: "0 8px 8px",
-        background: "#22242c",
-        borderRadius: 4,
-        fontSize: 12,
-      }}
-    >
-      <div style={{ fontWeight: 600, marginBottom: 4 }}>
-        {t("gearlever_notice_title")}
-      </div>
-      <div style={{ marginBottom: 8, color: "#9aa1a8" }}>
-        {t("gearlever_notice_body")}
-      </div>
-      {installing && (
-        <div style={{ marginBottom: 8 }}>
-          <ProgressBarWithInfo
-            layout="inline"
-            bottomSeparator="none"
-            indeterminate
-            nProgress={0}
-            sOperationText={t("installing")}
-          />
-        </div>
-      )}
-      <div style={{ display: "flex", gap: 8 }}>
-        <ActionButton size="small" onClick={install} disabled={installing}>
-          {installing ? t("installing") : t("install_gearlever")}
-        </ActionButton>
-        <ActionButton size="small" onClick={dismiss}>
-          {t("dismiss_understood")}
-        </ActionButton>
-      </div>
+    <div style={{ marginBottom: 8 }}>
+      <StatusCard
+        variant="info"
+        title={t("gearlever_notice_title")}
+        description={t("gearlever_notice_body")}
+      >
+        {installing && (
+          // Steam's own ProgressBarWithInfo turned out unreliable here
+          // (overflowed its own card even once stretched) — a plain
+          // hand-rolled indeterminate bar, same pattern as TopProgressBar
+          // elsewhere in this plugin, sidesteps it entirely.
+          <div style={{ marginBottom: 8, width: "100%", alignSelf: "stretch" }}>
+            <div style={{ fontSize: 11, opacity: 0.75, marginBottom: 4 }}>
+              {t("installing")}
+            </div>
+            <style>{`
+              @keyframes gearlever-install-progress {
+                0% { transform: translateX(-100%); }
+                100% { transform: translateX(350%); }
+              }
+            `}</style>
+            <div
+              style={{
+                width: "100%",
+                height: 4,
+                borderRadius: 2,
+                overflow: "hidden",
+                background: "rgba(255, 255, 255, 0.08)",
+              }}
+            >
+              <div
+                style={{
+                  height: "100%",
+                  width: "30%",
+                  background: "#4caf50",
+                  animation: "gearlever-install-progress 1.1s ease-in-out infinite",
+                }}
+              />
+            </div>
+          </div>
+        )}
+        <Focusable
+          style={{ display: "flex", gap: 8, width: "100%", alignSelf: "stretch" }}
+          flow-children="horizontal"
+        >
+          {/* flex:1 1 auto on each wrapper, not the buttons themselves
+              (ActionButton has no flex prop of its own, only `width` —
+              adding one means auditing every other consumer of this
+              shared decky-ui-kit component) — the wrapper's own hypothetical
+              flex-basis still comes from the button's natural text width
+              (width:100% on the button doesn't change that: max-content
+              sizing looks at the content's own preferred size, not any
+              width set on it), so a longer translation naturally claims
+              more of the row and the other wrapper is left with less,
+              while both together still fill it exactly. */}
+          <div style={{ flex: "1 1 auto", minWidth: 0 }}>
+            <ActionButton size="small" width="100%" onClick={install} disabled={installing}>
+              {installing ? t("installing") : t("install_gearlever")}
+            </ActionButton>
+          </div>
+          <div style={{ flex: "1 1 auto", minWidth: 0 }}>
+            <ActionButton size="small" width="100%" onClick={dismiss}>
+              {t("dismiss_understood")}
+            </ActionButton>
+          </div>
+        </Focusable>
+      </StatusCard>
     </div>
   );
 };

@@ -20,6 +20,8 @@ it queries the remote directly).
 import asyncio
 import os
 import re
+import shlex
+import shutil
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -228,6 +230,71 @@ def icon_path(app_id: str, scope: proc_env.Scope) -> Optional[Path]:
     svg_candidate = icons_dir / "scalable" / "apps" / f"{app_id}.svg"
     if svg_candidate.is_file():
         return svg_candidate
+    return None
+
+
+# Standard freedesktop Exec= field codes (Desktop Entry Specification) —
+# always meaningless for a Steam shortcut, which never launches with an
+# associated file/URI.
+_DESKTOP_FIELD_CODES = {
+    "%f", "%F", "%u", "%U", "%d", "%D", "%n", "%N", "%i", "%c", "%k", "%v", "%m",
+}
+
+
+def _strip_exec_placeholders(tokens: List[str]) -> List[str]:
+    """Drop freedesktop field codes and Flatpak's own `@@u ... @@` file-
+    forwarding bracket (both only matter when launching with a file/URI
+    argument, which a plain Steam shortcut never has)."""
+    out: List[str] = []
+    in_forwarding_bracket = False
+    for tok in tokens:
+        if tok == "@@":
+            in_forwarding_bracket = False
+            continue
+        if tok.startswith("@@"):
+            in_forwarding_bracket = True
+            continue
+        if in_forwarding_bracket or tok in _DESKTOP_FIELD_CODES:
+            continue
+        out.append(tok)
+    return out
+
+
+def launch_command(app_id: str, scope: proc_env.Scope) -> Optional[Tuple[str, str]]:
+    """(exe, launch_options) from this app's own exported .desktop Exec=
+    line — app-specific (varies by --command=, branch, arch), so a single
+    generic `flatpak run <app_id>` doesn't work for every app (confirmed:
+    Gear Lever needs --command=gearlever, Chrome needs --command=/app/
+    bin/chrome). Used to build a Steam non-Steam shortcut that actually
+    launches this app correctly.
+
+    Only the first Exec= is read — a .desktop file's [Desktop Entry]
+    group (the app's own main launch command) always comes before any
+    [Desktop Action ...] group (extra context-menu actions, e.g. Chrome's
+    "New Window"), so the first Exec= encountered scanning top to bottom
+    is always the right one.
+    """
+    desktop_path = (
+        _installation_root(scope) / "exports" / "share" / "applications" / f"{app_id}.desktop"
+    )
+    if not desktop_path.is_file():
+        return None
+    try:
+        for line in desktop_path.read_text(encoding="utf-8", errors="replace").splitlines():
+            if not line.startswith("Exec="):
+                continue
+            tokens = _strip_exec_placeholders(shlex.split(line[len("Exec="):].strip()))
+            if not tokens:
+                return None
+            exe = tokens[0]
+            if "/" not in exe:
+                exe = shutil.which(exe) or f"/usr/bin/{exe}"
+            launch_options = " ".join(
+                shlex.quote(t) if " " in t else t for t in tokens[1:]
+            )
+            return exe, launch_options
+    except Exception as e:
+        decky.logger.error(f"[flatpak] reading {desktop_path}: {e}")
     return None
 
 

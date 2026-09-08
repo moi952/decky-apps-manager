@@ -61,6 +61,14 @@
         "Naprawiono komunikat o statusie, który mógł twierdzić, że wszystko jest aktualne, podczas gdy sprawdzanie AppImages było nadal wstrzymane z powodu limitu zapytań GitHub",
         "Interfejs wtyczki jest teraz dostępny w 13 dodatkowych językach: niemieckim, hiszpańskim, włoskim, japońskim, koreańskim, niderlandzkim, polskim, portugalskim (Brazylia i Portugalia), rosyjskim, tureckim, ukraińskim i chińskim uproszczonym"
       ]
+    },
+    "v0_4_0": {
+      "title": "Nowości w wersji 0.4.0",
+      "items": [
+        "Dodaj zainstalowanego Flatpaka lub AppImage jako skrót Steam albo go usuń — z wykrywaniem, czy już istnieje, nawet dodany ręcznie",
+        "Gear Lever: naprawiono kilka błędów wykrywania — instalacja lub odinstalowanie (przez wtyczkę, Discover lub wiersz poleceń) jest teraz niezawodnie odzwierciedlane na liście aplikacji i w powiadomieniu instalacyjnym, nawet po restarcie Steam",
+        "Przeprojektowano powiadomienie o instalacji Gear Lever: ten sam rozmiar co inne karty, przyciski nawigowalne poziomo i pasek postępu, który już nie wychodzi poza kartę"
+      ]
     }
   },
   "apps_view": {
@@ -109,7 +117,15 @@
     "auto_update_unskip_button": "Zezwól na automatyczną aktualizację",
     "checking_updates": "Sprawdzanie aktualizacji…",
     "github_rate_limit_title": "Sprawdzanie aktualizacji AppImages wstrzymane",
-    "github_rate_limit_description": "GitHub ogranicza, jak często możemy anonimowo sprawdzać aktualizacje. Spróbuj ponownie za {{minutes}} min."
+    "github_rate_limit_description": "GitHub ogranicza, jak często możemy anonimowo sprawdzać aktualizacje. Spróbuj ponownie za {{minutes}} min.",
+    "steam_shortcut_add_button": "Dodaj jako skrót Steam",
+    "steam_shortcut_remove_button": "Usuń skrót Steam",
+    "steam_shortcut_add_failed_toast": "Nie udało się dodać tego skrótu Steam",
+    "steam_shortcut_restart_title": "Uruchom ponownie Steam",
+    "steam_shortcut_restart_added_body": "Uruchom ponownie Steam, aby nowy skrót pojawił się w Twojej bibliotece.",
+    "steam_shortcut_restart_removed_body": "Uruchom ponownie Steam, aby usunięty skrót zniknął z Twojej biblioteki.",
+    "steam_shortcut_restart_btn": "Uruchom ponownie Steam",
+    "steam_shortcut_restart_later_btn": "Nie teraz"
   },
   "all_apps_view": {
     "title": "Wszystkie aplikacje",
@@ -156,7 +172,7 @@
     "update_success_title": "Aktualizacja zainstalowana",
     "update_error_title": "Aktualizacja nie powiodła się",
     "update_error_description": "Sprawdź połączenie z internetem i spróbuj ponownie.",
-    "remove": "Usuń",
+    "remove": "Odinstaluj",
     "removing": "Usuwanie…",
     "remove_confirm_description": "Usunąć {{name}}? To całkowicie odinstaluje aplikację.",
     "remove_success_title": "Usunięto",
@@ -182,7 +198,7 @@
     "update_success_title": "Aktualizacja zainstalowana",
     "update_error_title": "Aktualizacja nie powiodła się",
     "update_error_description": "Sprawdź połączenie z internetem i spróbuj ponownie.",
-    "remove": "Usuń",
+    "remove": "Odinstaluj",
     "removing": "Usuwanie…",
     "remove_confirm_description": "Usunąć {{name}}? To całkowicie odinstaluje aplikację.",
     "remove_success_title": "Usunięto",

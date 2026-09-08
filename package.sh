@@ -28,6 +28,10 @@ log "Vendoring decky-plugin-toolkit..."
 pip3 install --target "$PLUGIN_DIR/py_modules" --no-deps --upgrade \
   "git+https://github.com/moi952/decky-plugin-toolkit.git@v0.1.0"
 find "$PLUGIN_DIR/py_modules" -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+# pip occasionally leaves a stray "UNKNOWN-0.0.0.dist-info" alongside the
+# real one on a --target re-install (empty metadata, no module files) —
+# harmless but no reason to zip it into every release.
+rm -rf "$PLUGIN_DIR/py_modules"/UNKNOWN-*.dist-info
 
 log "Building frontend..."
 ( cd "$PLUGIN_DIR" && pnpm run build )

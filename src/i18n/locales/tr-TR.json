@@ -61,6 +61,14 @@
         "GitHub'ın istek sınırı nedeniyle AppImage kontrolü hâlâ duraklatılmışken her şeyin güncel olduğunu iddia edebilen bir durum mesajı düzeltildi",
         "Eklentinin arayüzü artık 13 dil daha destekliyor: Almanca, İspanyolca, İtalyanca, Japonca, Korece, Felemenkçe, Lehçe, Portekizce (Brezilya ve Portekiz), Rusça, Türkçe, Ukraynaca ve Basitleştirilmiş Çince"
       ]
+    },
+    "v0_4_0": {
+      "title": "0.4.0 sürümündeki yenilikler",
+      "items": [
+        "Yüklü bir Flatpak veya AppImage'ı Steam kısayolu olarak ekle ya da kaldır — elle eklenmiş olsa bile zaten var olduğunu algılar",
+        "Gear Lever: birkaç algılama hatası düzeltildi — onu yüklemek veya kaldırmak (eklenti, Discover ya da komut satırı üzerinden) artık uygulama listesine ve yükleme bildirimine güvenilir şekilde yansıyor, Steam yeniden başlatıldıktan sonra bile",
+        "Gear Lever yükleme bildirimi yeniden tasarlandı: diğer kartlarla aynı boyut, yatay olarak gezinilebilen düğmeler ve artık taşmayan bir ilerleme çubuğu"
+      ]
     }
   },
   "apps_view": {
@@ -109,7 +117,15 @@
     "auto_update_unskip_button": "Otomatik güncellemeye izin ver",
     "checking_updates": "Güncellemeler kontrol ediliyor…",
     "github_rate_limit_title": "AppImage güncelleme kontrolü duraklatıldı",
-    "github_rate_limit_description": "GitHub, güncellemeleri anonim olarak ne sıklıkta kontrol edebileceğimizi sınırlıyor. {{minutes}} dakika sonra tekrar dene."
+    "github_rate_limit_description": "GitHub, güncellemeleri anonim olarak ne sıklıkta kontrol edebileceğimizi sınırlıyor. {{minutes}} dakika sonra tekrar dene.",
+    "steam_shortcut_add_button": "Steam kısayolu olarak ekle",
+    "steam_shortcut_remove_button": "Steam kısayolunu kaldır",
+    "steam_shortcut_add_failed_toast": "Bu Steam kısayolu eklenemedi",
+    "steam_shortcut_restart_title": "Steam'i yeniden başlat",
+    "steam_shortcut_restart_added_body": "Yeni kısayolun kitaplığında görünmesi için Steam'i yeniden başlat.",
+    "steam_shortcut_restart_removed_body": "Kaldırılan kısayolun kitaplığından kaybolması için Steam'i yeniden başlat.",
+    "steam_shortcut_restart_btn": "Steam'i yeniden başlat",
+    "steam_shortcut_restart_later_btn": "Şimdi değil"
   },
   "all_apps_view": {
     "title": "Tüm uygulamalar",

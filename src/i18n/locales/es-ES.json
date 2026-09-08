@@ -61,6 +61,14 @@
         "Se corrigió un mensaje de estado que podía afirmar que todo estaba al día mientras la comprobación de AppImages seguía en pausa por el límite de peticiones de GitHub",
         "La interfaz del plugin ya está disponible en 13 idiomas más: alemán, español, italiano, japonés, coreano, neerlandés, polaco, portugués (Brasil y Portugal), ruso, turco, ucraniano y chino simplificado"
       ]
+    },
+    "v0_4_0": {
+      "title": "Novedades de la versión 0.4.0",
+      "items": [
+        "Añade un Flatpak o AppImage instalado como acceso directo de Steam, o quítalo — con detección si ya está añadido, incluso a mano",
+        "Gear Lever: corregidos varios errores de detección — instalarlo o desinstalarlo (desde el plugin, Discover o la línea de comandos) ahora se refleja de forma fiable en la lista de apps y en el aviso de instalación, incluso tras reiniciar Steam",
+        "Rediseño del aviso de instalación de Gear Lever: mismo tamaño que las demás tarjetas, botones navegables horizontalmente, y una barra de progreso que ya no se desborda"
+      ]
     }
   },
   "apps_view": {
@@ -109,7 +117,15 @@
     "auto_update_unskip_button": "Permitir actualización automática",
     "checking_updates": "Buscando actualizaciones…",
     "github_rate_limit_title": "Comprobación de AppImages en pausa",
-    "github_rate_limit_description": "GitHub limita la frecuencia con la que podemos comprobar actualizaciones de forma anónima. Vuelve a intentarlo en {{minutes}} min."
+    "github_rate_limit_description": "GitHub limita la frecuencia con la que podemos comprobar actualizaciones de forma anónima. Vuelve a intentarlo en {{minutes}} min.",
+    "steam_shortcut_add_button": "Añadir como acceso directo de Steam",
+    "steam_shortcut_remove_button": "Quitar acceso directo de Steam",
+    "steam_shortcut_add_failed_toast": "No se pudo añadir este acceso directo de Steam",
+    "steam_shortcut_restart_title": "Reiniciar Steam",
+    "steam_shortcut_restart_added_body": "Reinicia Steam para que el nuevo acceso directo aparezca en tu biblioteca.",
+    "steam_shortcut_restart_removed_body": "Reinicia Steam para que el acceso directo eliminado desaparezca de tu biblioteca.",
+    "steam_shortcut_restart_btn": "Reiniciar Steam",
+    "steam_shortcut_restart_later_btn": "Ahora no"
   },
   "all_apps_view": {
     "title": "Todas las apps",
@@ -156,7 +172,7 @@
     "update_success_title": "Actualización instalada",
     "update_error_title": "Error al actualizar",
     "update_error_description": "Comprueba tu conexión a internet e inténtalo de nuevo.",
-    "remove": "Eliminar",
+    "remove": "Desinstalar",
     "removing": "Eliminando…",
     "remove_confirm_description": "¿Eliminar {{name}}? Esto la desinstala por completo.",
     "remove_success_title": "Eliminada",
@@ -182,7 +198,7 @@
     "update_success_title": "Actualización instalada",
     "update_error_title": "Error al actualizar",
     "update_error_description": "Comprueba tu conexión a internet e inténtalo de nuevo.",
-    "remove": "Eliminar",
+    "remove": "Desinstalar",
     "removing": "Eliminando…",
     "remove_confirm_description": "¿Eliminar {{name}}? Esto la desinstala por completo.",
     "remove_success_title": "Eliminada",

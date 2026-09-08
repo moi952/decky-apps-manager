@@ -46,15 +46,19 @@ async def is_installed() -> bool:
 
 
 async def install() -> bool:
+    # capture_output=False — see proc_env.run's own note: this specific
+    # command (flatpak install --system) confirmed hanging communicate()
+    # for minutes past the point the install had actually already
+    # finished, every single time it was tried on-device.
     code, _, _ = await proc_env.run(
         ["flatpak", "install", "flathub", APP_ID, "-y", "--noninteractive", "--system"],
-        "system", _LOG, timeout=300,
+        "system", _LOG, timeout=300, capture_output=False,
     )
     if code == 0:
         return True
     code, _, _ = await proc_env.run(
         ["flatpak", "install", "flathub", APP_ID, "-y", "--noninteractive", "--user"],
-        "user", _LOG, timeout=300,
+        "user", _LOG, timeout=300, capture_output=False,
     )
     return code == 0
 

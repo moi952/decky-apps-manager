@@ -14,11 +14,11 @@ import json
 import mimetypes
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import decky
 
-from . import appimage_catalog, flatpak, gearlever, gearlever_versions, http_json
+from . import appimage_catalog, flatpak, gearlever, gearlever_versions, http_json, steam_shortcuts
 
 _EXCLUDED_APPS_PATH = Path(decky.DECKY_PLUGIN_SETTINGS_DIR) / "excluded_apps.json"
 # Apps that stay fully visible/notified about, but auto-update is not
@@ -166,23 +166,57 @@ def _invalidate_auto_update_skip_flags(skip_ids: set) -> None:
         app["auto_update_skipped"] = app["id"] in skip_ids
 
 
-def get_gearlever_notice_seen() -> bool:
+def _read_gearlever_notice_state() -> Dict[str, Any]:
     try:
         if _GEARLEVER_NOTICE_PATH.is_file():
-            return json.loads(_GEARLEVER_NOTICE_PATH.read_text(encoding="utf-8")).get("seen", False)
+            return json.loads(_GEARLEVER_NOTICE_PATH.read_text(encoding="utf-8"))
     except Exception as e:
         decky.logger.error(f"[apps_service] reading gearlever_notice_seen.json: {e}")
-    return False
+    return {}
 
 
-def set_gearlever_notice_seen() -> bool:
+def _write_gearlever_notice_state(state: Dict[str, Any]) -> bool:
     try:
         _GEARLEVER_NOTICE_PATH.parent.mkdir(parents=True, exist_ok=True)
-        _GEARLEVER_NOTICE_PATH.write_text(json.dumps({"seen": True}), encoding="utf-8")
+        _GEARLEVER_NOTICE_PATH.write_text(json.dumps(state), encoding="utf-8")
         return True
     except Exception as e:
         decky.logger.error(f"[apps_service] writing gearlever_notice_seen.json: {e}")
         return False
+
+
+def get_gearlever_notice_seen() -> bool:
+    return _read_gearlever_notice_state().get("seen", False)
+
+
+def set_gearlever_notice_seen() -> bool:
+    state = _read_gearlever_notice_state()
+    state["seen"] = True
+    return _write_gearlever_notice_state(state)
+
+
+def sync_gearlever_notice_seen(installed: bool) -> None:
+    """A plain sticky "seen" boolean alone got stuck permanently true the
+    moment *any* single dismissal happened, however it was triggered
+    (confirmed on-device more than once: an install attempt's own
+    cleanup, an explicit dismiss) — nothing short of comparing against
+    the actual install state can tell "still the same absence the user
+    already dismissed" from "a brand new one, deserves a fresh notice".
+    The in-memory install-state cache can't be that comparison point
+    either: it resets to unknown on every plugin reload, which is
+    exactly when this kept getting caught out mid-testing. So the
+    previously-seen install state is persisted here too, and "seen" is
+    cleared the moment that persisted state disagrees with the current
+    one — in *either* direction (just installed, or just removed again)
+    — or the very first time this ever runs (nothing persisted yet to
+    compare against, so a leftover "seen" from before this existed can't
+    be trusted either)."""
+    state = _read_gearlever_notice_state()
+    last_installed = state.get("installed_last_check")
+    if last_installed is None or last_installed != installed:
+        state["seen"] = False
+    state["installed_last_check"] = installed
+    _write_gearlever_notice_state(state)
 
 
 def get_update_check_interval_minutes() -> int:
@@ -378,6 +412,12 @@ async def install_gearlever() -> bool:
     try:
         ok = await gearlever.install()
         _gearlever_installed_cache = ok
+        # Not synced here on `ok` alone — confirmed on-device that this
+        # call's own reported result isn't always trustworthy (the
+        # underlying flatpak transaction can succeed even when this
+        # doesn't resolve cleanly). list_apps()'s own sync_gearlever_
+        # notice_seen call, right after the caller's refresh(), checks
+        # the real state directly instead.
         return ok
     finally:
         _gearlever_installing = False
@@ -386,7 +426,25 @@ async def install_gearlever() -> bool:
 async def list_apps(force: bool = False) -> Dict[str, Any]:
     global _apps_cache
     if not force and _apps_cache is not None:
-        return {**_apps_cache, "from_cache": True, "network_available": True}
+        # Cheap and local (two `flatpak info` calls, no network) — worth
+        # re-checking even on the fast path, unlike everything else this
+        # branch skips. Confirmed on-device this was the actual bug behind
+        # "Gear Lever installed/removed outside the plugin doesn't get
+        # noticed": _apps_cache above is reloaded from disk on every
+        # backend restart (Steam relaunch reloads the plugin process), so
+        # without this, a stale on-disk gearlever_installed could sit
+        # untouched for up to _DEFAULT_UPDATE_CHECK_INTERVAL_MINUTES before
+        # anything forced a real rebuild — Gear Lever itself (or its whole
+        # apps list) silently wrong the entire time.
+        live_gearlever_installed = await is_gearlever_installed(force=True)
+        sync_gearlever_notice_seen(live_gearlever_installed)
+        if live_gearlever_installed == _apps_cache.get("gearlever_installed"):
+            return {**_apps_cache, "from_cache": True, "network_available": True}
+        # Disagrees with the cached snapshot — Gear Lever's own presence
+        # (and therefore its flatpak entry and/or its whole apps list)
+        # changed since this cache was written. Fall through to a full
+        # rebuild instead of returning it as if nothing changed.
+        force = True
 
     if not await http_json.has_internet():
         # Every flatpak/gearlever subprocess below fails the exact same
@@ -417,6 +475,7 @@ async def list_apps(force: bool = False) -> Dict[str, Any]:
     # concurrently instead of one after another is a straight wall-clock
     # win with no shared state to worry about.
     gearlever_installed = await is_gearlever_installed()
+    sync_gearlever_notice_seen(gearlever_installed)
     if gearlever_installed:
         flatpak_lists, gearlever_apps = await asyncio.gather(
             asyncio.gather(*(flatpak.list_apps_with_updates(scope) for scope in ("system", "user"))),
@@ -594,6 +653,46 @@ def get_app_icon(app_id: str) -> str:
         return _read_as_data_uri(gearlever.icon_path(file_path))
 
     return ""
+
+
+_ICON_CACHE_DIR = Path(decky.DECKY_PLUGIN_SETTINGS_DIR) / "icon_cache"
+
+
+def save_shortcut_icon_png(cache_key: str, png_base64: str) -> str:
+    """Writes bytes already rasterized frontend-side (canvas, not a system
+    tool — see steamShortcut.ts's own note on why) to a real file.
+    SteamClient.Apps.SetShortcutIcon needs an actual path on disk, not
+    embedded bytes — confirmed on-device that its own artwork endpoint
+    (SetCustomArtworkForApp with assetType=Icon) doesn't actually apply
+    the small icon at all, only Capsule does; this path-based call is
+    the one that showed up as a real _icon.ico file. Plain file write,
+    no conversion — nothing here can fail for lack of a system package."""
+    try:
+        _ICON_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+        safe_key = "".join(c if c.isalnum() else "_" for c in cache_key)
+        png_path = _ICON_CACHE_DIR / f"{safe_key}.png"
+        png_path.write_bytes(base64.b64decode(png_base64))
+        return str(png_path)
+    except Exception as e:
+        decky.logger.error(f"[apps_service] writing shortcut icon for {cache_key}: {e}")
+        return ""
+
+
+def get_flatpak_launch_command(app_id: str) -> Optional[Tuple[str, str]]:
+    """(exe, launch_options) for a Steam shortcut — see flatpak.launch_
+    command's own note on why this can't be a generic `flatpak run
+    <app_id>`. None if this Flatpak has no exported .desktop entry (rare)
+    — the caller falls back to the generic form in that case."""
+    flatpak_ref = _parse_flatpak_id(app_id)
+    if not flatpak_ref:
+        return None
+    return flatpak.launch_command(flatpak_ref["app_id"], flatpak_ref["scope"])
+
+
+
+
+def find_steam_shortcut(launch_options: str) -> Optional[int]:
+    return steam_shortcuts.find_shortcut_appid(launch_options)
 
 
 # ── Flatpak catalog (search/install apps not yet installed) ─────────────

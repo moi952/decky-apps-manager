@@ -59,7 +59,15 @@
         "Les heures suivent maintenant la convention de ta langue (12h avec AM/PM en anglais, 24h en français, ...) au lieu d'afficher systématiquement du 24h",
         "L'historique des mises à jour automatiques dans les paramètres affiche maintenant la version de chaque app, avant et après",
         "Correction d'un message qui pouvait dire que tout était à jour alors que la vérification des AppImages était encore en pause à cause de la limite GitHub",
-      "L'interface du plugin est maintenant disponible dans 13 langues supplémentaires : allemand, espagnol, italien, japonais, coréen, néerlandais, polonais, portugais (Brésil et Portugal), russe, turc, ukrainien et chinois simplifié"
+        "L'interface du plugin est maintenant disponible dans 13 langues supplémentaires : allemand, espagnol, italien, japonais, coréen, néerlandais, polonais, portugais (Brésil et Portugal), russe, turc, ukrainien et chinois simplifié"
+      ]
+    },
+    "v0_4_0": {
+      "title": "Nouveautés de la version 0.4.0",
+      "items": [
+        "Possibilité d'ajouter un Flatpak ou un AppImage installé comme raccourci Steam, ou de le supprimer — avec détection s'il est déjà ajouté, même manuellement",
+        "Gear Lever : correction de plusieurs bugs de détection — l'installer ou le désinstaller (par le plugin, Discover, ou en ligne de commande) se reflète maintenant fiablement dans la liste et dans la notice, y compris après un redémarrage de Steam",
+        "Refonte visuelle de la notice d'installation de Gear Lever : même taille que les autres cartes, boutons navigables horizontalement, et barre de progression qui ne déborde plus"
       ]
     }
   },
@@ -109,7 +117,15 @@
     "auto_update_unskip_button": "Autoriser la MAJ automatique",
     "checking_updates": "Recherche de mises à jour…",
     "github_rate_limit_title": "Vérification des AppImages en pause",
-    "github_rate_limit_description": "GitHub limite le nombre de vérifications anonymes. Réessayez dans {{minutes}} min."
+    "github_rate_limit_description": "GitHub limite le nombre de vérifications anonymes. Réessayez dans {{minutes}} min.",
+    "steam_shortcut_add_button": "Ajouter comme raccourci Steam",
+    "steam_shortcut_remove_button": "Retirer le raccourci Steam",
+    "steam_shortcut_add_failed_toast": "Impossible d'ajouter ce raccourci Steam",
+    "steam_shortcut_restart_title": "Redémarrer Steam",
+    "steam_shortcut_restart_added_body": "Redémarre Steam pour que le nouveau raccourci apparaisse dans ta bibliothèque.",
+    "steam_shortcut_restart_removed_body": "Redémarre Steam pour que le raccourci retiré disparaisse de ta bibliothèque.",
+    "steam_shortcut_restart_btn": "Redémarrer Steam",
+    "steam_shortcut_restart_later_btn": "Pas maintenant"
   },
   "all_apps_view": {
     "title": "Toutes les apps",
@@ -156,7 +172,7 @@
     "update_success_title": "Mise à jour installée",
     "update_error_title": "Échec de la mise à jour",
     "update_error_description": "Vérifiez votre connexion internet et réessayez.",
-    "remove": "Supprimer",
+    "remove": "Désinstaller",
     "removing": "Suppression…",
     "remove_confirm_description": "Supprimer {{name}} ? L'app sera complètement désinstallée.",
     "remove_success_title": "Supprimée",
@@ -182,7 +198,7 @@
     "update_success_title": "Mise à jour installée",
     "update_error_title": "Échec de la mise à jour",
     "update_error_description": "Vérifiez votre connexion internet et réessayez.",
-    "remove": "Supprimer",
+    "remove": "Désinstaller",
     "removing": "Suppression…",
     "remove_confirm_description": "Supprimer {{name}} ? L'app sera complètement désinstallée.",
     "remove_success_title": "Supprimée",

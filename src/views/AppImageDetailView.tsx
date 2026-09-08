@@ -32,6 +32,7 @@ import { FaGithub } from "react-icons/fa";
 import PanelSectionCustom from "../components/PanelSectionCustom";
 import { BackHandler } from "../components/BackHandler";
 import { InlineConfirm } from "../components/InlineConfirm";
+import { SteamShortcutButton } from "../components/SteamShortcutButton";
 import { TopProgressBar } from "../components/TopProgressBar";
 import { getCachedIcon, setCachedIcon } from "../utils/iconCache";
 import { minutesUntil } from "../utils/functions";
@@ -637,6 +638,10 @@ export const AppImageDetailView: React.FC<AppImageDetailViewProps> = ({
                 </ActionButton>
               </div>
             </Focusable>
+
+            <div style={{ marginTop: 8 }}>
+              <SteamShortcutButton app={app} />
+            </div>
           </>
         )}
 

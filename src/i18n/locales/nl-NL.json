@@ -61,6 +61,14 @@
         "Een statusbericht opgelost dat kon beweren dat alles up-to-date was terwijl de AppImage-controle nog gepauzeerd was door de rate limit van GitHub",
         "De interface van de plugin is nu beschikbaar in 13 extra talen: Duits, Spaans, Italiaans, Japans, Koreaans, Nederlands, Pools, Portugees (Brazilië en Portugal), Russisch, Turks, Oekraïens en vereenvoudigd Chinees"
       ]
+    },
+    "v0_4_0": {
+      "title": "Nieuw in 0.4.0",
+      "items": [
+        "Voeg een geïnstalleerde Flatpak of AppImage toe als Steam-snelkoppeling, of verwijder er een — met detectie als die al is toegevoegd, ook handmatig",
+        "Gear Lever: meerdere detectiebugs opgelost — installeren of deïnstalleren (via de plugin, Discover, of de opdrachtregel) wordt nu betrouwbaar weergegeven in de app-lijst en de installatiemelding, ook na een herstart van Steam",
+        "De installatiemelding van Gear Lever is herzien: dezelfde grootte als andere kaarten, horizontaal navigeerbare knoppen, en een voortgangsbalk die niet meer overloopt"
+      ]
     }
   },
   "apps_view": {
@@ -109,7 +117,15 @@
     "auto_update_unskip_button": "Automatisch bijwerken toestaan",
     "checking_updates": "Controleren op updates…",
     "github_rate_limit_title": "AppImage-updatecontrole gepauzeerd",
-    "github_rate_limit_description": "GitHub beperkt hoe vaak we anoniem op updates kunnen controleren. Probeer het over {{minutes}} min. opnieuw."
+    "github_rate_limit_description": "GitHub beperkt hoe vaak we anoniem op updates kunnen controleren. Probeer het over {{minutes}} min. opnieuw.",
+    "steam_shortcut_add_button": "Toevoegen als Steam-snelkoppeling",
+    "steam_shortcut_remove_button": "Steam-snelkoppeling verwijderen",
+    "steam_shortcut_add_failed_toast": "Kon deze Steam-snelkoppeling niet toevoegen",
+    "steam_shortcut_restart_title": "Steam herstarten",
+    "steam_shortcut_restart_added_body": "Herstart Steam zodat de nieuwe snelkoppeling in je bibliotheek verschijnt.",
+    "steam_shortcut_restart_removed_body": "Herstart Steam zodat de verwijderde snelkoppeling uit je bibliotheek verdwijnt.",
+    "steam_shortcut_restart_btn": "Steam herstarten",
+    "steam_shortcut_restart_later_btn": "Niet nu"
   },
   "all_apps_view": {
     "title": "Alle apps",
@@ -156,7 +172,7 @@
     "update_success_title": "Update geïnstalleerd",
     "update_error_title": "Bijwerken mislukt",
     "update_error_description": "Controleer je internetverbinding en probeer het opnieuw.",
-    "remove": "Verwijderen",
+    "remove": "Deïnstalleren",
     "removing": "Verwijderen…",
     "remove_confirm_description": "{{name}} verwijderen? Dit deïnstalleert de app volledig.",
     "remove_success_title": "Verwijderd",
@@ -182,7 +198,7 @@
     "update_success_title": "Update geïnstalleerd",
     "update_error_title": "Bijwerken mislukt",
     "update_error_description": "Controleer je internetverbinding en probeer het opnieuw.",
-    "remove": "Verwijderen",
+    "remove": "Deïnstalleren",
     "removing": "Verwijderen…",
     "remove_confirm_description": "{{name}} verwijderen? Dit deïnstalleert de app volledig.",
     "remove_success_title": "Verwijderd",

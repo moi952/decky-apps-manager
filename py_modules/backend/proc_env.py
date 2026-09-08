@@ -160,20 +160,38 @@ async def run(
     scope: Scope,
     log_prefix: str,
     timeout: Optional[float] = 60,
+    capture_output: bool = True,
 ) -> Tuple[int, str, str]:
     """Run a subprocess with the right env/identity for `scope`, logging the
     command and any failure. Returns (returncode, stdout, stderr);
-    returncode is -1 on timeout."""
+    returncode is -1 on timeout.
+
+    capture_output=False for a command whose own output isn't needed
+    (only its exit code): confirmed on-device that `flatpak install
+    --system` can hang this call forever even though the install itself
+    already finished and the process we spawned already exited (no
+    zombie, no child left anywhere) — flatpak's own system-helper (a
+    long-lived root daemon, activated over D-Bus, entirely outside this
+    process's own child tree) ends up holding a duplicate of its stdout/
+    stderr open for as long as *it* keeps running, so the pipe's write
+    end never actually reaches EOF from communicate()'s point of view.
+    proc.wait() only waits on the process's own exit status — never on a
+    pipe closing — so it isn't exposed to that at all.
+    """
     decky.logger.info(f"[{log_prefix}] $ {' '.join(args)}")
     try:
         proc = await asyncio.create_subprocess_exec(
             *args,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
+            stdout=asyncio.subprocess.PIPE if capture_output else asyncio.subprocess.DEVNULL,
+            stderr=asyncio.subprocess.PIPE if capture_output else asyncio.subprocess.DEVNULL,
             env=build_env(scope),
             **_drop_privileges_kwargs(scope),
         )
-        out, err = await asyncio.wait_for(proc.communicate(), timeout=timeout)
+        if capture_output:
+            out, err = await asyncio.wait_for(proc.communicate(), timeout=timeout)
+        else:
+            await asyncio.wait_for(proc.wait(), timeout=timeout)
+            out, err = b"", b""
     except asyncio.TimeoutError:
         decky.logger.error(f"[{log_prefix}] timed out after {timeout}s: {' '.join(args)}")
         # wait_for only stops *us* from waiting on communicate() — it

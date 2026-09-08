@@ -61,6 +61,14 @@
         "修复了一个状态消息，此前在 AppImage 检查因 GitHub 请求限制而暂停时，仍可能声称一切已是最新",
         "插件界面现已新增支持13种语言：德语、西班牙语、意大利语、日语、韩语、荷兰语、波兰语、葡萄牙语（巴西和葡萄牙）、俄语、土耳其语、乌克兰语和简体中文"
       ]
+    },
+    "v0_4_0": {
+      "title": "0.4.0 版本新特性",
+      "items": [
+        "可以将已安装的 Flatpak 或 AppImage 添加为 Steam 快捷方式，或将其移除 — 能检测是否已经添加过，即使是手动添加的",
+        "Gear Lever：修复了多个检测相关的问题 — 无论通过插件、Discover 还是命令行安装或卸载它，现在都能可靠地反映在应用列表和安装提示中，即使在重启 Steam 之后也是如此",
+        "重新设计了 Gear Lever 的安装提示：与其他卡片尺寸一致，按钮可横向导航，进度条也不再溢出"
+      ]
     }
   },
   "apps_view": {
@@ -109,7 +117,15 @@
     "auto_update_unskip_button": "允许自动更新",
     "checking_updates": "正在检查更新…",
     "github_rate_limit_title": "AppImage 更新检查已暂停",
-    "github_rate_limit_description": "GitHub 限制了匿名检查更新的频率。请在 {{minutes}} 分钟后重试。"
+    "github_rate_limit_description": "GitHub 限制了匿名检查更新的频率。请在 {{minutes}} 分钟后重试。",
+    "steam_shortcut_add_button": "添加为 Steam 快捷方式",
+    "steam_shortcut_remove_button": "移除 Steam 快捷方式",
+    "steam_shortcut_add_failed_toast": "无法添加此 Steam 快捷方式",
+    "steam_shortcut_restart_title": "重启 Steam",
+    "steam_shortcut_restart_added_body": "重启 Steam 以便新的快捷方式出现在你的库中。",
+    "steam_shortcut_restart_removed_body": "重启 Steam 以便已移除的快捷方式从你的库中消失。",
+    "steam_shortcut_restart_btn": "重启 Steam",
+    "steam_shortcut_restart_later_btn": "暂不"
   },
   "all_apps_view": {
     "title": "所有应用",
@@ -156,7 +172,7 @@
     "update_success_title": "更新已安装",
     "update_error_title": "更新失败",
     "update_error_description": "请检查你的网络连接并重试。",
-    "remove": "移除",
+    "remove": "卸载",
     "removing": "正在移除…",
     "remove_confirm_description": "移除 {{name}}？这将彻底卸载该应用。",
     "remove_success_title": "已移除",
@@ -182,7 +198,7 @@
     "update_success_title": "更新已安装",
     "update_error_title": "更新失败",
     "update_error_description": "请检查你的网络连接并重试。",
-    "remove": "移除",
+    "remove": "卸载",
     "removing": "正在移除…",
     "remove_confirm_description": "移除 {{name}}？这将彻底卸载该应用。",
     "remove_success_title": "已移除",

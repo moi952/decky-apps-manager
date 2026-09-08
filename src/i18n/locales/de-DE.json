@@ -61,6 +61,14 @@
         "Eine Statusmeldung behoben, die behaupten konnte, alles sei aktuell, während die AppImage-Prüfung durch GitHubs Ratenbegrenzung noch pausiert war",
         "Die Oberfläche des Plugins ist jetzt in 13 weiteren Sprachen verfügbar: Deutsch, Spanisch, Italienisch, Japanisch, Koreanisch, Niederländisch, Polnisch, Portugiesisch (Brasilien und Portugal), Russisch, Türkisch, Ukrainisch und vereinfachtes Chinesisch"
       ]
+    },
+    "v0_4_0": {
+      "title": "Neuigkeiten in 0.4.0",
+      "items": [
+        "Füge einen installierten Flatpak oder AppImage als Steam-Verknüpfung hinzu oder entferne ihn — mit Erkennung, falls er schon vorhanden ist, auch von Hand hinzugefügt",
+        "Gear Lever: mehrere Erkennungsfehler behoben — das Installieren oder Deinstallieren (über das Plugin, Discover oder die Kommandozeile) spiegelt sich jetzt zuverlässig in der App-Liste und im Installationshinweis wider, auch nach einem Steam-Neustart",
+        "Der Gear-Lever-Installationshinweis wurde überarbeitet: gleiche Größe wie andere Karten, horizontal navigierbare Buttons und ein Fortschrittsbalken, der nicht mehr überläuft"
+      ]
     }
   },
   "apps_view": {
@@ -109,7 +117,15 @@
     "auto_update_unskip_button": "Automatisches Update erlauben",
     "checking_updates": "Suche nach Updates…",
     "github_rate_limit_title": "AppImage-Update-Prüfung pausiert",
-    "github_rate_limit_description": "GitHub begrenzt, wie oft anonym nach Updates gesucht werden kann. Versuch es in {{minutes}} Min. erneut."
+    "github_rate_limit_description": "GitHub begrenzt, wie oft anonym nach Updates gesucht werden kann. Versuch es in {{minutes}} Min. erneut.",
+    "steam_shortcut_add_button": "Als Steam-Verknüpfung hinzufügen",
+    "steam_shortcut_remove_button": "Steam-Verknüpfung entfernen",
+    "steam_shortcut_add_failed_toast": "Diese Steam-Verknüpfung konnte nicht hinzugefügt werden",
+    "steam_shortcut_restart_title": "Steam neu starten",
+    "steam_shortcut_restart_added_body": "Starte Steam neu, damit die neue Verknüpfung in deiner Bibliothek erscheint.",
+    "steam_shortcut_restart_removed_body": "Starte Steam neu, damit die entfernte Verknüpfung aus deiner Bibliothek verschwindet.",
+    "steam_shortcut_restart_btn": "Steam neu starten",
+    "steam_shortcut_restart_later_btn": "Nicht jetzt"
   },
   "all_apps_view": {
     "title": "Alle Apps",
@@ -156,7 +172,7 @@
     "update_success_title": "Update installiert",
     "update_error_title": "Update fehlgeschlagen",
     "update_error_description": "Überprüfe deine Internetverbindung und versuch es erneut.",
-    "remove": "Entfernen",
+    "remove": "Deinstallieren",
     "removing": "Wird entfernt…",
     "remove_confirm_description": "{{name}} entfernen? Dies deinstalliert die App vollständig.",
     "remove_success_title": "Entfernt",
@@ -182,7 +198,7 @@
     "update_success_title": "Update installiert",
     "update_error_title": "Update fehlgeschlagen",
     "update_error_description": "Überprüfe deine Internetverbindung und versuch es erneut.",
-    "remove": "Entfernen",
+    "remove": "Deinstallieren",
     "removing": "Wird entfernt…",
     "remove_confirm_description": "{{name}} entfernen? Dies deinstalliert die App vollständig.",
     "remove_success_title": "Entfernt",

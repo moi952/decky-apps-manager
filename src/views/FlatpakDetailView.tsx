@@ -26,6 +26,7 @@ import {
 import PanelSectionCustom from "../components/PanelSectionCustom";
 import { BackHandler } from "../components/BackHandler";
 import { InlineConfirm } from "../components/InlineConfirm";
+import { SteamShortcutButton } from "../components/SteamShortcutButton";
 import { TopProgressBar } from "../components/TopProgressBar";
 import { getCachedIcon, setCachedIcon } from "../utils/iconCache";
 import { AppEntry } from "../types/apps";
@@ -240,6 +241,10 @@ export const FlatpakDetailView: React.FC<FlatpakDetailViewProps> = ({
             </ActionButton>
           </div>
         </Focusable>
+
+        <div style={{ marginTop: 8 }}>
+          <SteamShortcutButton app={app} />
+        </div>
 
         {result && (
           <div style={{ marginTop: 12 }}>

@@ -61,6 +61,14 @@
         "GitHub의 요청 제한으로 AppImage 확인이 아직 일시 중지된 상태에서도 모든 것이 최신이라고 주장할 수 있었던 상태 메시지를 수정했습니다",
         "플러그인 인터페이스가 이제 13개 언어를 추가로 지원합니다: 독일어, 스페인어, 이탈리아어, 일본어, 한국어, 네덜란드어, 폴란드어, 포르투갈어(브라질 및 포르투갈), 러시아어, 터키어, 우크라이나어, 중국어 간체"
       ]
+    },
+    "v0_4_0": {
+      "title": "0.4.0의 새로운 기능",
+      "items": [
+        "설치된 Flatpak이나 AppImage를 Steam 바로가기로 추가하거나 제거할 수 있습니다 — 수동으로 추가된 경우도 감지합니다",
+        "Gear Lever: 여러 감지 버그를 수정했습니다 — 플러그인, Discover, 명령줄 중 무엇으로 설치하거나 제거해도 이제 앱 목록과 설치 알림에 안정적으로 반영됩니다(Steam 재시작 후에도 마찬가지입니다)",
+        "Gear Lever 설치 알림의 디자인을 개선했습니다: 다른 카드와 동일한 크기, 좌우로 이동 가능한 버튼, 더 이상 넘치지 않는 진행률 표시줄"
+      ]
     }
   },
   "apps_view": {
@@ -109,7 +117,15 @@
     "auto_update_unskip_button": "자동 업데이트 허용",
     "checking_updates": "업데이트 확인 중…",
     "github_rate_limit_title": "AppImage 업데이트 확인이 일시 중지됨",
-    "github_rate_limit_description": "GitHub은 익명으로 업데이트를 확인할 수 있는 빈도를 제한합니다. {{minutes}}분 후 다시 시도하세요."
+    "github_rate_limit_description": "GitHub은 익명으로 업데이트를 확인할 수 있는 빈도를 제한합니다. {{minutes}}분 후 다시 시도하세요.",
+    "steam_shortcut_add_button": "Steam 바로가기로 추가",
+    "steam_shortcut_remove_button": "Steam 바로가기 제거",
+    "steam_shortcut_add_failed_toast": "이 Steam 바로가기를 추가할 수 없습니다",
+    "steam_shortcut_restart_title": "Steam 재시작",
+    "steam_shortcut_restart_added_body": "새 바로가기가 라이브러리에 표시되려면 Steam을 재시작하세요.",
+    "steam_shortcut_restart_removed_body": "제거한 바로가기가 라이브러리에서 사라지려면 Steam을 재시작하세요.",
+    "steam_shortcut_restart_btn": "Steam 재시작",
+    "steam_shortcut_restart_later_btn": "나중에"
   },
   "all_apps_view": {
     "title": "모든 앱",

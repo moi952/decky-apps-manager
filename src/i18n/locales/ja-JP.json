@@ -61,6 +61,14 @@
         "GitHubのリクエスト制限でAppImageの確認が一時停止中でも、すべて最新であると主張してしまうことがあったステータスメッセージを修正",
         "プラグインのインターフェースが13の言語に新たに対応しました: ドイツ語、スペイン語、イタリア語、日本語、韓国語、オランダ語、ポーランド語、ポルトガル語(ブラジルとポルトガル)、ロシア語、トルコ語、ウクライナ語、簡体字中国語"
       ]
+    },
+    "v0_4_0": {
+      "title": "0.4.0 の新機能",
+      "items": [
+        "インストール済みの Flatpak や AppImage を Steam ショートカットとして追加・削除できます — 手動で追加済みの場合も検出します",
+        "Gear Lever: 検出に関する複数のバグを修正 — プラグイン、Discover、コマンドラインのいずれでインストール・アンインストールしても、アプリ一覧とインストール通知に確実に反映されるようになりました(Steamの再起動後も含む)",
+        "Gear Lever のインストール通知の見た目を改善: 他のカードと同じサイズになり、ボタンを横方向に操作できるようになり、プログレスバーがはみ出さなくなりました"
+      ]
     }
   },
   "apps_view": {
@@ -109,7 +117,15 @@
     "auto_update_unskip_button": "自動更新を許可",
     "checking_updates": "更新を確認中…",
     "github_rate_limit_title": "AppImageの更新確認が一時停止中",
-    "github_rate_limit_description": "GitHubは匿名での更新確認の頻度を制限しています。{{minutes}} 分後にもう一度お試しください。"
+    "github_rate_limit_description": "GitHubは匿名での更新確認の頻度を制限しています。{{minutes}} 分後にもう一度お試しください。",
+    "steam_shortcut_add_button": "Steamショートカットとして追加",
+    "steam_shortcut_remove_button": "Steamショートカットを削除",
+    "steam_shortcut_add_failed_toast": "このSteamショートカットを追加できませんでした",
+    "steam_shortcut_restart_title": "Steamを再起動",
+    "steam_shortcut_restart_added_body": "新しいショートカットがライブラリに表示されるように、Steamを再起動してください。",
+    "steam_shortcut_restart_removed_body": "削除したショートカットがライブラリから消えるように、Steamを再起動してください。",
+    "steam_shortcut_restart_btn": "Steamを再起動",
+    "steam_shortcut_restart_later_btn": "今はしない"
   },
   "all_apps_view": {
     "title": "すべてのアプリ",
@@ -156,7 +172,7 @@
     "update_success_title": "更新をインストールしました",
     "update_error_title": "更新に失敗しました",
     "update_error_description": "インターネット接続を確認してもう一度お試しください。",
-    "remove": "削除",
+    "remove": "アンインストール",
     "removing": "削除中…",
     "remove_confirm_description": "{{name}} を削除しますか?完全にアンインストールされます。",
     "remove_success_title": "削除しました",
@@ -182,7 +198,7 @@
     "update_success_title": "更新をインストールしました",
     "update_error_title": "更新に失敗しました",
     "update_error_description": "インターネット接続を確認してもう一度お試しください。",
-    "remove": "削除",
+    "remove": "アンインストール",
     "removing": "削除中…",
     "remove_confirm_description": "{{name}} を削除しますか?完全にアンインストールされます。",
     "remove_success_title": "削除しました",

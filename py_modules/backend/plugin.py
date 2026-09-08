@@ -64,6 +64,16 @@ class Plugin(PluginUpdaterMixin, WhatsNewSeenMixin, OtherPluginsSeenMixin):
     async def get_app_icon(self, app_id: str) -> str:
         return apps_service.get_app_icon(app_id)
 
+    async def save_shortcut_icon_png(self, cache_key: str, png_base64: str) -> str:
+        return apps_service.save_shortcut_icon_png(cache_key, png_base64)
+
+    async def get_flatpak_launch_command(self, app_id: str) -> Optional[List[str]]:
+        result = apps_service.get_flatpak_launch_command(app_id)
+        return list(result) if result else None
+
+    async def find_steam_shortcut(self, identifier: str) -> Optional[int]:
+        return apps_service.find_steam_shortcut(identifier)
+
     async def is_gearlever_installed(self) -> bool:
         return await apps_service.is_gearlever_installed()
 
