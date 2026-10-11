@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { FiArrowRight } from "react-icons/fi";
 
 import { getCachedIcon, setCachedIcon } from "../utils/iconCache";
+import { AppIcon } from "./AppIcon";
 import { AppKind } from "../types/apps";
 
 interface AutoUpdateAppRowProps {
@@ -14,7 +15,14 @@ interface AutoUpdateAppRowProps {
   // "transparent" for use inside a colored card (StatusCard's own green/
   // red background would otherwise clash with a solid row background);
   // a real color for standalone use (Settings' own history list).
-  color?: "light" | "dark" | "transparent" | "success" | "danger" | "info" | "warning";
+  color?:
+    | "light"
+    | "dark"
+    | "transparent"
+    | "success"
+    | "danger"
+    | "info"
+    | "warning";
   // Omit to leave the row a plain (non-navigating) display, e.g. when the
   // caller couldn't resolve this id back to a still-installed app.
   onPress?: () => void;
@@ -70,19 +78,20 @@ export const AutoUpdateAppRow: React.FC<AutoUpdateAppRowProps> = ({
         onPress={onPress}
         onOKActionDescription={onPress ? t("open_app_detail") : undefined}
         highlightOnFocus={false}
-        media={
-          icon && (
-            <img
-              src={icon}
-              alt=""
-              style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
-            />
-          )
-        }
+        media={<AppIcon src={icon} />}
         title={name}
         details={
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <div className="dck-au-row-kind" style={{ fontSize: 11, color: "#9aa1a8" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <div
+              className="dck-au-row-kind"
+              style={{ fontSize: 11, color: "#9aa1a8" }}
+            >
               {kind === "flatpak" ? "Flatpak" : "AppImage"}
             </div>
             {oldVersion && newVersion && (

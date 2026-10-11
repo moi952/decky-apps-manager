@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 
 import { AppEntry, AppRowStatus } from "../types/apps";
 import { getCachedIcon, setCachedIcon } from "../utils/iconCache";
+import { AppIcon } from "./AppIcon";
 
 interface AppRowProps {
   app: AppEntry;
@@ -56,15 +57,7 @@ export const AppRow: React.FC<AppRowProps> = ({
       onPress={onRowPress}
       onOKActionDescription={onRowPress ? t("open_app_detail") : undefined}
       collapsedByDefault={collapsible}
-      media={
-        icon && (
-          <img
-            src={icon}
-            alt=""
-            style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
-          />
-        )
-      }
+      media={<AppIcon src={icon} runtime={app.runtime} />}
       title={app.name}
       details={
         <>

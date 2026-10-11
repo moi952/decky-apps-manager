@@ -29,6 +29,7 @@ import { InlineConfirm } from "../components/InlineConfirm";
 import { SteamShortcutButton } from "../components/SteamShortcutButton";
 import { TopProgressBar } from "../components/TopProgressBar";
 import { getCachedIcon, setCachedIcon } from "../utils/iconCache";
+import { AppIcon } from "../components/AppIcon";
 import { AppEntry } from "../types/apps";
 
 interface FlatpakDetailViewProps {
@@ -169,17 +170,11 @@ export const FlatpakDetailView: React.FC<FlatpakDetailViewProps> = ({
           </ActionButton>
         </Focusable>
 
-        {icon && (
-          <div
-            style={{ marginTop: 8, display: "flex", justifyContent: "center" }}
-          >
-            <img
-              src={icon}
-              alt=""
-              style={{ width: 64, height: 64, objectFit: "contain" }}
-            />
-          </div>
-        )}
+        <div
+          style={{ marginTop: 8, display: "flex", justifyContent: "center" }}
+        >
+          <AppIcon src={icon} size={64} runtime={app.runtime} />
+        </div>
 
         <div
           style={{

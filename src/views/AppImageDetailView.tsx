@@ -36,6 +36,7 @@ import { InlineConfirm } from "../components/InlineConfirm";
 import { SteamShortcutButton } from "../components/SteamShortcutButton";
 import { TopProgressBar } from "../components/TopProgressBar";
 import { getCachedIcon, setCachedIcon } from "../utils/iconCache";
+import { AppIcon } from "../components/AppIcon";
 import { minutesUntil } from "../utils/functions";
 import { AppEntry, AppImageVersionOption } from "../types/apps";
 
@@ -410,15 +411,11 @@ export const AppImageDetailView: React.FC<AppImageDetailViewProps> = ({
           </ActionButton>
         </Focusable>
 
-        {icon && (
-          <div style={{ marginTop: 8, display: "flex", justifyContent: "center" }}>
-            <img
-              src={icon}
-              alt=""
-              style={{ width: 64, height: 64, objectFit: "contain" }}
-            />
-          </div>
-        )}
+        <div
+          style={{ marginTop: 8, display: "flex", justifyContent: "center" }}
+        >
+          <AppIcon src={icon} size={64} />
+        </div>
 
         <div
           style={{
