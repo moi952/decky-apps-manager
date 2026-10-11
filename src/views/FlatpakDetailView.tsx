@@ -90,7 +90,9 @@ export const FlatpakDetailView: React.FC<FlatpakDetailViewProps> = ({
     // from another remote (e.g. Anatase) just gets an empty list here,
     // and ScreenshotCarousel already renders nothing for that.
     if (app.app_id) {
-      call<[string], string[]>("get_flatpak_screenshots", app.app_id).then(setScreenshots);
+      call<[string], string[]>("get_flatpak_screenshots", app.app_id).then(
+        setScreenshots,
+      );
     }
   }, [app.app_id]);
 
@@ -114,40 +116,48 @@ export const FlatpakDetailView: React.FC<FlatpakDetailViewProps> = ({
   };
 
   const infoRows: InfoTableRow[] = [
-    { icon: <FiTag size={13} />, label: t("info_version"), value: app.version ?? "—" },
+    {
+      icon: <FiTag size={13} />,
+      label: t("info_version"),
+      value: app.version ?? "—",
+    },
     // One combined row — check_failed and has_update never both hold at
     // once (a failed check never also reports a confirmed update), so
     // there's never a real conflict between the two to show here.
     ...(app.update_check_failed
       ? [
-        {
-          icon: <FiAlertTriangle size={13} />,
-          label: t("info_status"),
-          value: tApps("update_check_failed_label"),
-          accent: "#ef4444",
-        },
-      ]
+          {
+            icon: <FiAlertTriangle size={13} />,
+            label: t("info_status"),
+            value: tApps("update_check_failed_label"),
+            accent: "#ef4444",
+          },
+        ]
       : app.has_update
-      ? [
-        {
-          icon: <FiUpload size={13} />,
-          label: t("info_status"),
-          // See AppRow.tsx's own note — a same-looking version can still
-          // mean "an update exists" (commit-level change only).
-          value:
-              app.available_version && app.available_version !== app.version
-                ? app.available_version
-                : tApps("update_available"),
-          accent: "#4caf50",
-        },
-      ]
-      : []),
+        ? [
+            {
+              icon: <FiUpload size={13} />,
+              label: t("info_status"),
+              // See AppRow.tsx's own note — a same-looking version can still
+              // mean "an update exists" (commit-level change only).
+              value:
+                app.available_version && app.available_version !== app.version
+                  ? app.available_version
+                  : tApps("update_available"),
+              accent: "#4caf50",
+            },
+          ]
+        : []),
     {
       icon: <FiServer size={13} />,
       label: t("info_scope"),
       value: app.scope === "system" ? t("scope_system") : t("scope_user"),
     },
-    { icon: <FiHash size={13} />, label: t("info_app_id"), value: app.app_id ?? "—" },
+    {
+      icon: <FiHash size={13} />,
+      label: t("info_app_id"),
+      value: app.app_id ?? "—",
+    },
   ];
 
   return (
@@ -160,7 +170,9 @@ export const FlatpakDetailView: React.FC<FlatpakDetailViewProps> = ({
         </Focusable>
 
         {icon && (
-          <div style={{ marginTop: 8, display: "flex", justifyContent: "center" }}>
+          <div
+            style={{ marginTop: 8, display: "flex", justifyContent: "center" }}
+          >
             <img
               src={icon}
               alt=""
@@ -170,7 +182,12 @@ export const FlatpakDetailView: React.FC<FlatpakDetailViewProps> = ({
         )}
 
         <div
-          style={{ marginTop: 8, fontWeight: 600, fontSize: 14, textAlign: "center" }}
+          style={{
+            marginTop: 8,
+            fontWeight: 600,
+            fontSize: 14,
+            textAlign: "center",
+          }}
         >
           {app.name}
         </div>
@@ -217,21 +234,47 @@ export const FlatpakDetailView: React.FC<FlatpakDetailViewProps> = ({
           flow-children="horizontal"
         >
           <div style={{ flex: 1 }}>
-            <ActionButton width="100%" onClick={onToggleExclude} disabled={!!busy}>
+            <ActionButton
+              width="100%"
+              onClick={onToggleExclude}
+              disabled={!!busy}
+            >
               <div
-                style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 2,
+                }}
               >
                 {app.excluded ? <FiEyeOff size={14} /> : <FiEye size={14} />}
-                <span>{app.excluded ? tApps("follow_button") : tApps("ignore_button")}</span>
+                <span>
+                  {app.excluded
+                    ? tApps("follow_button")
+                    : tApps("ignore_button")}
+                </span>
               </div>
             </ActionButton>
           </div>
           <div style={{ flex: 1 }}>
-            <ActionButton width="100%" onClick={onToggleAutoUpdateSkip} disabled={!!busy}>
+            <ActionButton
+              width="100%"
+              onClick={onToggleAutoUpdateSkip}
+              disabled={!!busy}
+            >
               <div
-                style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 2,
+                }}
               >
-                {app.auto_update_skipped ? <FiPause size={14} /> : <FiRefreshCw size={14} />}
+                {app.auto_update_skipped ? (
+                  <FiPause size={14} />
+                ) : (
+                  <FiRefreshCw size={14} />
+                )}
                 <span>
                   {app.auto_update_skipped
                     ? tApps("auto_update_unskip_button")

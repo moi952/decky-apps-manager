@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Focusable } from "@decky/ui";
-import { call, toaster } from "@decky/api";
+import { call } from "@decky/api";
 import { ActionButton, StatusCard } from "@moi952/decky-ui-kit";
 import { useTranslation } from "react-i18next";
 
 import { useApps } from "../context/AppsContext";
+import { pluginToast } from "../utils/toast";
 
 // How often we poll "is an install still running?" — both to recover an
 // install already in progress on mount, and (see the effect that starts
@@ -99,14 +100,14 @@ export const GearleverNotice: React.FC<GearleverNoticeProps> = ({
     startInstallingPoll();
     call<[], boolean>("install_gearlever")
       .then((ok) => {
-        toaster.toast({
+        pluginToast({
           title: "Gearlever",
           body: ok ? t("install_gearlever_success") : t("install_gearlever_failed"),
         });
       })
       .catch((e) => {
         console.error("[GearleverNotice] install_gearlever failed", e);
-        toaster.toast({ title: "Gearlever", body: t("install_gearlever_failed") });
+        pluginToast({ title: "Gearlever", body: t("install_gearlever_failed") });
       });
   };
 

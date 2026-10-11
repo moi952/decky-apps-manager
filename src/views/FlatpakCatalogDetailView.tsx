@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Focusable } from "@decky/ui";
-import { call, toaster } from "@decky/api";
+import { call } from "@decky/api";
+import { pluginToast } from "../utils/toast";
 import {
   ActionButton,
   InfoTable,
@@ -78,7 +79,7 @@ export const FlatpakCatalogDetailView: React.FC<FlatpakCatalogDetailViewProps> =
         entry.app_id,
         entry.remote
       );
-      toaster.toast({
+      pluginToast({
         title: entry.name,
         body: ok ? t("install_success") : t("install_failed"),
       });

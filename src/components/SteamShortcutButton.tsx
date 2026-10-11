@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { call, toaster } from "@decky/api";
+import { call } from "@decky/api";
 import { ActionButton } from "@moi952/decky-ui-kit";
 import { useTranslation } from "react-i18next";
 import { SiSteam } from "react-icons/si";
 
 import { AppEntry } from "../types/apps";
+import { pluginToast } from "../utils/toast";
 import {
   addSteamShortcut,
   canBuildShortcut,
@@ -50,7 +51,7 @@ export const SteamShortcutButton: React.FC<SteamShortcutButtonProps> = ({ app })
     try {
       const params = await resolveShortcutParams(app);
       if (!params) {
-        toaster.toast({ title: "Steam", body: t("steam_shortcut_add_failed_toast") });
+        pluginToast({ title: "Steam", body: t("steam_shortcut_add_failed_toast") });
         return;
       }
       const newId = await addSteamShortcut(app.name, params);
@@ -76,13 +77,13 @@ export const SteamShortcutButton: React.FC<SteamShortcutButtonProps> = ({ app })
           t("steam_shortcut_restart_later_btn"),
         );
       } else {
-        toaster.toast({ title: "Steam", body: t("steam_shortcut_add_failed_toast") });
+        pluginToast({ title: "Steam", body: t("steam_shortcut_add_failed_toast") });
       }
     } catch (e) {
       // AddShortcut rejecting must never leave the button stuck on
       // "busy" forever with no feedback at all — see the finally below.
       console.error("[SteamShortcutButton] AddShortcut failed", e);
-      toaster.toast({ title: "Steam", body: t("steam_shortcut_add_failed_toast") });
+      pluginToast({ title: "Steam", body: t("steam_shortcut_add_failed_toast") });
     } finally {
       setBusy(false);
     }

@@ -68,7 +68,9 @@ export const AppRow: React.FC<AppRowProps> = ({
       title={app.name}
       details={
         <>
-          <div style={{ fontSize: 11, color: "#9aa1a8" }}>{app.version ?? ""}</div>
+          <div style={{ fontSize: 11, color: "#9aa1a8" }}>
+            {app.version ?? ""}
+          </div>
           {app.has_update && (
             <div style={{ fontSize: 11, color: "#4caf50" }}>
               {/* A rolling/OCI remote (e.g. Anatase) can republish a new
@@ -78,7 +80,9 @@ export const AppRow: React.FC<AppRowProps> = ({
                   Showing the same number twice reads as a bug, so drop the
                   number in that case rather than repeat it. */}
               {app.available_version && app.available_version !== app.version
-                ? t("available_version_label", { version: app.available_version })
+                ? t("available_version_label", {
+                    version: app.available_version,
+                  })
                 : t("update_available")}
             </div>
           )}

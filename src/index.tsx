@@ -3,9 +3,10 @@ import {
   definePlugin,
   addEventListener,
   removeEventListener,
-  toaster,
+  call,
 } from "@decky/api";
 import i18n from "i18next";
+import { pluginToast } from "./utils/toast";
 import { Focusable, staticClasses } from "@decky/ui";
 import { FiList, FiSettings, FiShoppingBag } from "react-icons/fi";
 import { RiShoppingBag3Fill } from "react-icons/ri";
@@ -224,18 +225,50 @@ export default definePlugin(() => {
   const updateListener = addEventListener(
     "plugin_update_available",
     (info: PluginUpdateInfo) => {
-      toaster.toast({
+      pluginToast({
         title: i18n.t("plugin_update:section_label"),
         body: i18n.t("plugin_update:banner", { version: info?.latest_version }),
       });
     }
   );
 
-  // apps_update_available is handled inside AppsContext itself (see its
-  // own note) — that's the only place that can both show the toast and
-  // actually refresh the panel's own state, not just this top-level
-  // listener (which runs outside the React tree, so it could only ever
-  // toast).
+  // Fired periodically by Plugin._apps_update_check_loop() on the Python
+  // side. This has to live here, at the top level, rather than only inside
+  // AppsContext's own useEffect — Decky only mounts a plugin's `content`
+  // while its own tab is the one currently selected (confirmed in
+  // decky-loader's PluginView.tsx: inactive plugins are never rendered),
+  // so a listener registered inside the React tree only ever fires while
+  // this plugin's panel happens to be open at that exact moment — in
+  // practice, close to never. Registering it here instead, in
+  // definePlugin's own body, runs it for the whole Decky Loader session
+  // regardless of which tab is showing (same pattern Steamcord uses for
+  // its own notifications). AppsContext keeps its own copy of these
+  // listeners too, but only to refresh its in-memory state when the panel
+  // does happen to be open — not to toast, avoiding a double toast.
+  const appsUpdateListener = addEventListener(
+    "apps_update_available",
+    async (info: { count: number }) => {
+      const enabled = await call<[], boolean>("get_update_toast_enabled");
+      if (enabled) {
+        pluginToast({
+          title: i18n.t("apps_view:section_label"),
+          body: i18n.t("apps_view:updates_available_toast", { count: info?.count }),
+        });
+      }
+    }
+  );
+  const appsAutoUpdatedListener = addEventListener(
+    "apps_auto_updated",
+    async (info: { count: number }) => {
+      const enabled = await call<[], boolean>("get_update_toast_enabled");
+      if (enabled) {
+        pluginToast({
+          title: i18n.t("apps_view:section_label"),
+          body: i18n.t("apps_view:auto_updated_toast", { count: info?.count }),
+        });
+      }
+    }
+  );
 
   return {
     name: projectConfig.pluginName,
@@ -250,6 +283,8 @@ export default definePlugin(() => {
     icon: <RiShoppingBag3Fill />,
     onDismount() {
       removeEventListener("plugin_update_available", updateListener);
+      removeEventListener("apps_update_available", appsUpdateListener);
+      removeEventListener("apps_auto_updated", appsAutoUpdatedListener);
     },
   };
 });

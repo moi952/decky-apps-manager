@@ -5,8 +5,9 @@ import React, {
   useEffect,
   useState,
 } from "react";
-import { addEventListener, call, removeEventListener, toaster } from "@decky/api";
+import { addEventListener, call, removeEventListener } from "@decky/api";
 import { useTranslation } from "react-i18next";
+import { pluginToast } from "../utils/toast";
 
 import {
   AppEntry,
@@ -203,7 +204,7 @@ export const AppsProvider: React.FC<{ children: React.ReactNode }> = ({
           }
         }
       } catch {
-        toaster.toast({ title: t("error_title"), body: t("refresh_failed") });
+        pluginToast({ title: t("error_title"), body: t("refresh_failed") });
       } finally {
         setLoading(false);
         setBackgroundLoading(false);
@@ -218,55 +219,35 @@ export const AppsProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   // Fired periodically by Plugin._apps_update_check_loop() on the Python
-  // side — surfaces even if the user never opens the panel. That loop
-  // already just ran its own forced list_apps() and cached the result,
-  // so a plain (non-forced) refresh here picks it up instantly instead
-  // of re-running every flatpak/gearlever subprocess a second time. This
-  // has to live here (inside the provider), not in index.tsx's own
-  // top-level addEventListener — that one runs outside the React tree
-  // entirely, so it could only ever show the toast, never update this
-  // context's own state, which was exactly what left the panel showing
-  // "up to date" even while the toast it just fired said otherwise.
+  // side. The toast itself is shown by index.tsx's own top-level listener
+  // (registered in definePlugin, so it fires all session long regardless
+  // of which plugin tab is open — see its comment) — this one only
+  // refreshes this context's own in-memory state for whenever the panel
+  // does happen to be open, using the loop's own already-cached
+  // list_apps() result instead of re-running every flatpak/gearlever
+  // subprocess a second time.
   useEffect(() => {
-    const listener = addEventListener(
-      "apps_update_available",
-      (info: { count: number }) => {
-        if (showUpdateToasts) {
-          toaster.toast({
-            title: t("section_label"),
-            body: t("updates_available_toast", { count: info?.count }),
-          });
-        }
-        refresh(false);
-      }
-    );
+    const listener = addEventListener("apps_update_available", () => {
+      refresh(false);
+    });
     return () => removeEventListener("apps_update_available", listener);
-  }, [t, refresh, showUpdateToasts]);
+  }, [refresh]);
 
   // Fired instead of apps_update_available when the background loop found
   // updates AND auto-update is on — it already applied them itself
   // (apps_service.update_all(), same path "Update all" uses, so the
-  // exclude list is respected the same way), this just reports what
-  // happened and picks up the now-current state. The toast toggle only
-  // gates the toast itself — the persisted history (refreshed here too)
-  // always records the run regardless, since that toast is exactly the
-  // kind of easy-to-miss notice the history exists to back up.
+  // exclude list is respected the same way). Toast handled by index.tsx's
+  // top-level listener (see above); this refreshes state and the
+  // persisted history, which always records the run regardless of the
+  // toast toggle, since that toast is exactly the kind of easy-to-miss
+  // notice the history exists to back up.
   useEffect(() => {
-    const listener = addEventListener(
-      "apps_auto_updated",
-      (info: { count: number }) => {
-        if (showUpdateToasts) {
-          toaster.toast({
-            title: t("section_label"),
-            body: t("auto_updated_toast", { count: info?.count }),
-          });
-        }
-        refresh(false);
-        refreshAutoUpdateHistory();
-      }
-    );
+    const listener = addEventListener("apps_auto_updated", () => {
+      refresh(false);
+      refreshAutoUpdateHistory();
+    });
     return () => removeEventListener("apps_auto_updated", listener);
-  }, [t, refresh, showUpdateToasts, refreshAutoUpdateHistory]);
+  }, [refresh, refreshAutoUpdateHistory]);
 
   // Returns whether the app ended up in a good state (updated, or was
   // already current) — callers that navigate away on success (e.g. a
@@ -283,22 +264,22 @@ export const AppsProvider: React.FC<{ children: React.ReactNode }> = ({
         );
         if (result === "updated") {
           setStatus(id, "done");
-          toaster.toast({ title: t("section_label"), body: t("update_done") });
+          pluginToast({ title: t("section_label"), body: t("update_done") });
         } else if (result === "already_up_to_date") {
           setStatus(id, "idle");
-          toaster.toast({
+          pluginToast({
             title: t("section_label"),
             body: t("already_up_to_date"),
           });
         } else {
           setStatus(id, "error");
-          toaster.toast({ title: t("error_title"), body: t("update_failed") });
+          pluginToast({ title: t("error_title"), body: t("update_failed") });
         }
         await refresh(false);
         return result !== "error";
       } catch {
         setStatus(id, "error");
-        toaster.toast({ title: t("error_title"), body: t("update_failed") });
+        pluginToast({ title: t("error_title"), body: t("update_failed") });
         return false;
       }
     },
@@ -312,13 +293,13 @@ export const AppsProvider: React.FC<{ children: React.ReactNode }> = ({
         const ok = await call<[string], boolean>("uninstall_app", id);
         if (!ok) {
           setStatus(id, "error");
-          toaster.toast({ title: t("error_title"), body: t("uninstall_failed") });
+          pluginToast({ title: t("error_title"), body: t("uninstall_failed") });
         }
         await refresh(false);
         return ok;
       } catch {
         setStatus(id, "error");
-        toaster.toast({ title: t("error_title"), body: t("uninstall_failed") });
+        pluginToast({ title: t("error_title"), body: t("uninstall_failed") });
         return false;
       }
     },
@@ -333,14 +314,14 @@ export const AppsProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       const ok = await call<[], boolean>("update_all_apps");
       if (!ok) {
-        toaster.toast({
+        pluginToast({
           title: t("error_title"),
           body: t("update_all_failed"),
         });
       }
       await refresh(false);
     } catch {
-      toaster.toast({ title: t("error_title"), body: t("update_all_failed") });
+      pluginToast({ title: t("error_title"), body: t("update_all_failed") });
     } finally {
       ids.forEach((id) => setStatus(id, "idle"));
     }

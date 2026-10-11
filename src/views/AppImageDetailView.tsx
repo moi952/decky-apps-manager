@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Focusable, Navigation, PanelSectionRow, ToggleField } from "@decky/ui";
-import { call, toaster } from "@decky/api";
+import { call } from "@decky/api";
+import { pluginToast } from "../utils/toast";
 import {
   ActionButton,
   AnchoredDropdown,
@@ -63,7 +64,11 @@ const MANAGERS: ManagerDef[] = [
     value: "GithubUpdater",
     label: "GitHub",
     fields: [
-      { key: "allow_prereleases", labelKey: "allow_prereleases", boolean: true },
+      {
+        key: "allow_prereleases",
+        labelKey: "allow_prereleases",
+        boolean: true,
+      },
       { key: "repo", labelKey: "field_repo" },
       { key: "repo_filename", labelKey: "field_repo_filename" },
     ],
@@ -88,7 +93,11 @@ const MANAGERS: ManagerDef[] = [
     value: "ForgejoUpdater",
     label: "Forgejo",
     fields: [
-      { key: "allow_prereleases", labelKey: "allow_prereleases", boolean: true },
+      {
+        key: "allow_prereleases",
+        labelKey: "allow_prereleases",
+        boolean: true,
+      },
       { key: "repo_url", labelKey: "field_repo_url" },
       { key: "repo_filename", labelKey: "field_repo_filename" },
     ],
@@ -115,7 +124,10 @@ interface AppImageDetailViewProps {
 }
 
 type Busy = "updating" | "removing" | "installing_version" | null;
-type Result = { kind: "update" | "remove" | "install_version"; ok: boolean } | null;
+type Result = {
+  kind: "update" | "remove" | "install_version";
+  ok: boolean;
+} | null;
 
 // Long enough to actually read the success message before this page
 // closes itself and returns to the (now-refreshed) list.
@@ -123,7 +135,7 @@ const SUCCESS_AUTOCLOSE_MS = 1500;
 
 const fieldValuesFor = (
   manager: ManagerDef,
-  config: Record<string, string | boolean>
+  config: Record<string, string | boolean>,
 ): Record<string, string> => {
   const values: Record<string, string> = {};
   for (const f of manager.fields) {
@@ -159,7 +171,10 @@ export const AppImageDetailView: React.FC<AppImageDetailViewProps> = ({
   // risks accidentally changing it.
   const [editingConfig, setEditingConfig] = useState(false);
   const [managerIndex, setManagerIndex] = useState(
-    Math.max(0, MANAGERS.findIndex((m) => m.value === manager))
+    Math.max(
+      0,
+      MANAGERS.findIndex((m) => m.value === manager),
+    ),
   );
   const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
@@ -170,9 +185,9 @@ export const AppImageDetailView: React.FC<AppImageDetailViewProps> = ({
   // yet. Lazy-loaded (only fetched once the picker is actually opened),
   // same reasoning as PluginUpdateSection's own release list.
   const [showVersionPicker, setShowVersionPicker] = useState(false);
-  const [versionOptions, setVersionOptions] = useState<AppImageVersionOption[] | null>(
-    null
-  );
+  const [versionOptions, setVersionOptions] = useState<
+    AppImageVersionOption[] | null
+  >(null);
   const [loadingVersions, setLoadingVersions] = useState(false);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
@@ -180,7 +195,10 @@ export const AppImageDetailView: React.FC<AppImageDetailViewProps> = ({
     setShowVersionPicker(true);
     if (versionOptions !== null || loadingVersions || !app.file_path) return;
     setLoadingVersions(true);
-    call<[string], AppImageVersionOption[]>("list_appimage_versions", app.file_path)
+    call<[string], AppImageVersionOption[]>(
+      "list_appimage_versions",
+      app.file_path,
+    )
       .then((versions) => {
         setVersionOptions(versions);
         // Preselect what's actually installed, so opening the picker
@@ -193,9 +211,12 @@ export const AppImageDetailView: React.FC<AppImageDetailViewProps> = ({
       .finally(() => setLoadingVersions(false));
   };
 
-  const selectedVersion = versionOptions?.find((v) => v.tag === selectedTag) ?? null;
+  const selectedVersion =
+    versionOptions?.find((v) => v.tag === selectedTag) ?? null;
   const selectedIsCurrent =
-    !!selectedVersion && !!app.version && selectedVersion.version === app.version;
+    !!selectedVersion &&
+    !!app.version &&
+    selectedVersion.version === app.version;
 
   const installVersion = async () => {
     if (!app.file_path || !selectedVersion) return;
@@ -205,7 +226,7 @@ export const AppImageDetailView: React.FC<AppImageDetailViewProps> = ({
       "install_appimage_version",
       app.file_path,
       selectedVersion.url,
-      selectedVersion.version
+      selectedVersion.version,
     );
     setBusy(null);
     setResult({ kind: "install_version", ok });
@@ -230,7 +251,10 @@ export const AppImageDetailView: React.FC<AppImageDetailViewProps> = ({
   }, [app.id]);
 
   const openEditConfig = () => {
-    const idx = Math.max(0, MANAGERS.findIndex((m) => m.value === manager));
+    const idx = Math.max(
+      0,
+      MANAGERS.findIndex((m) => m.value === manager),
+    );
     setManagerIndex(idx);
     setFieldValues(fieldValuesFor(MANAGERS[idx], config));
     setEditingConfig(true);
@@ -282,10 +306,10 @@ export const AppImageDetailView: React.FC<AppImageDetailViewProps> = ({
         "set_gearlever_update_source",
         app.file_path,
         selectedManager.value,
-        nextConfig
+        nextConfig,
       );
       if (ok) {
-        toaster.toast({ title: app.name, body: t("saved") });
+        pluginToast({ title: app.name, body: t("saved") });
         setEditingConfig(false);
         // Something about the source changed — recheck this app for
         // updates rather than leaving the pre-change state on screen.
@@ -303,37 +327,41 @@ export const AppImageDetailView: React.FC<AppImageDetailViewProps> = ({
     : null;
 
   const infoRows: InfoTableRow[] = [
-    { icon: <FiTag size={13} />, label: t("info_version"), value: app.version ?? "—" },
+    {
+      icon: <FiTag size={13} />,
+      label: t("info_version"),
+      value: app.version ?? "—",
+    },
     // One combined row — check_failed and has_update never both hold at
     // once (a failed check never also reports a confirmed update), so
     // there's never a real conflict between the two to show here.
     ...(app.update_check_failed
       ? [
-        {
-          icon: <FiAlertTriangle size={13} />,
-          label: t("info_status"),
-          value: tApps("update_check_failed_label"),
-          accent: "#ef4444",
-        },
-      ]
+          {
+            icon: <FiAlertTriangle size={13} />,
+            label: t("info_status"),
+            value: tApps("update_check_failed_label"),
+            accent: "#ef4444",
+          },
+        ]
       : app.has_update
-      ? [
-        {
-          icon: <FiUpload size={13} />,
-          label: t("info_status"),
-          // A same-looking version can still mean "an update exists" —
-          // e.g. the update source republished the same tag with a
-          // rebuilt asset — so a value that matches the current version
-          // is shown as a neutral "update available" instead of
-          // repeating the same number (see AppRow.tsx's own note).
-          value:
-              app.available_version && app.available_version !== app.version
-                ? app.available_version
-                : t("update_available"),
-          accent: "#4caf50",
-        },
-      ]
-      : []),
+        ? [
+            {
+              icon: <FiUpload size={13} />,
+              label: t("info_status"),
+              // A same-looking version can still mean "an update exists" —
+              // e.g. the update source republished the same tag with a
+              // rebuilt asset — so a value that matches the current version
+              // is shown as a neutral "update available" instead of
+              // repeating the same number (see AppRow.tsx's own note).
+              value:
+                app.available_version && app.available_version !== app.version
+                  ? app.available_version
+                  : t("update_available"),
+              accent: "#4caf50",
+            },
+          ]
+        : []),
     {
       icon: <FiCheckCircle size={13} />,
       label: t("info_source"),
@@ -344,29 +372,33 @@ export const AppImageDetailView: React.FC<AppImageDetailViewProps> = ({
         ? t("info_source_embedded")
         : manager
           ? [currentManagerLabel, config.repo || config.repo_url || config.url]
-            .filter(Boolean)
-            .join(" — ")
+              .filter(Boolean)
+              .join(" — ")
           : t("info_source_none"),
     },
     ...(app.running != null
       ? [
-        {
-          icon: <FiPlay size={13} />,
-          label: t("info_running"),
-          value: app.running ? t("yes") : t("no"),
-        },
-      ]
+          {
+            icon: <FiPlay size={13} />,
+            label: t("info_running"),
+            value: app.running ? t("yes") : t("no"),
+          },
+        ]
       : []),
     ...(app.desktop_id
       ? [
-        {
-          icon: <FiFileText size={13} />,
-          label: t("info_desktop_file"),
-          value: app.desktop_id,
-        },
-      ]
+          {
+            icon: <FiFileText size={13} />,
+            label: t("info_desktop_file"),
+            value: app.desktop_id,
+          },
+        ]
       : []),
-    { icon: <FiFile size={13} />, label: t("info_file_path"), value: app.file_path ?? "—" },
+    {
+      icon: <FiFile size={13} />,
+      label: t("info_file_path"),
+      value: app.file_path ?? "—",
+    },
   ];
 
   return (
@@ -389,7 +421,12 @@ export const AppImageDetailView: React.FC<AppImageDetailViewProps> = ({
         )}
 
         <div
-          style={{ marginTop: 8, fontWeight: 600, fontSize: 14, textAlign: "center" }}
+          style={{
+            marginTop: 8,
+            fontWeight: 600,
+            fontSize: 14,
+            textAlign: "center",
+          }}
         >
           {app.name}
         </div>
@@ -441,16 +478,24 @@ export const AppImageDetailView: React.FC<AppImageDetailViewProps> = ({
         {manager === "GithubUpdater" && (
           <div style={{ marginTop: 16 }}>
             {!showVersionPicker ? (
-              <ActionButton width="100%" onClick={openVersionPicker} disabled={!!busy}>
+              <ActionButton
+                width="100%"
+                onClick={openVersionPicker}
+                disabled={!!busy}
+              >
                 {t("change_version")}
               </ActionButton>
             ) : (
               <>
-                <div style={{ fontSize: 11, color: "#9aa1a8", marginBottom: 4 }}>
+                <div
+                  style={{ fontSize: 11, color: "#9aa1a8", marginBottom: 4 }}
+                >
                   {t("choose_version_label")}
                 </div>
                 {loadingVersions ? (
-                  <div style={{ fontSize: 12, opacity: 0.7 }}>{t("loading_versions")}</div>
+                  <div style={{ fontSize: 12, opacity: 0.7 }}>
+                    {t("loading_versions")}
+                  </div>
                 ) : versionOptions && versionOptions.length > 0 ? (
                   <>
                     <AnchoredDropdown
@@ -458,19 +503,28 @@ export const AppImageDetailView: React.FC<AppImageDetailViewProps> = ({
                       size="small"
                       options={versionOptions.map((v) => ({
                         value: v.tag,
-                        label: v.prerelease ? `${v.version} (pre-release)` : v.version,
+                        label: v.prerelease
+                          ? `${v.version} (pre-release)`
+                          : v.version,
                       }))}
                       selectedValue={selectedTag ?? ""}
                       onChange={setSelectedTag}
                     />
                     <Focusable
-                      style={{ display: "flex", gap: 8, width: "100%", marginTop: 8 }}
+                      style={{
+                        display: "flex",
+                        gap: 8,
+                        width: "100%",
+                        marginTop: 8,
+                      }}
                       flow-children="horizontal"
                     >
                       <div style={{ flex: 1 }}>
                         <ActionButton
                           width="100%"
-                          disabled={!selectedVersion || selectedIsCurrent || !!busy}
+                          disabled={
+                            !selectedVersion || selectedIsCurrent || !!busy
+                          }
                           onClick={installVersion}
                         >
                           {busy === "installing_version"
@@ -479,8 +533,8 @@ export const AppImageDetailView: React.FC<AppImageDetailViewProps> = ({
                               ? t("current_version_installed")
                               : selectedVersion
                                 ? t("install_version_button", {
-                                  version: selectedVersion.version,
-                                })
+                                    version: selectedVersion.version,
+                                  })
                                 : t("choose_version_label")}
                         </ActionButton>
                       </div>
@@ -493,7 +547,9 @@ export const AppImageDetailView: React.FC<AppImageDetailViewProps> = ({
                     </Focusable>
                   </>
                 ) : (
-                  <div style={{ fontSize: 12, opacity: 0.7 }}>{t("no_versions_found")}</div>
+                  <div style={{ fontSize: 12, opacity: 0.7 }}>
+                    {t("no_versions_found")}
+                  </div>
                 )}
               </>
             )}
@@ -509,10 +565,16 @@ export const AppImageDetailView: React.FC<AppImageDetailViewProps> = ({
               <AnchoredDropdown
                 variant="boxed"
                 size="small"
-                options={MANAGERS.map((m) => ({ value: m.value, label: m.label }))}
+                options={MANAGERS.map((m) => ({
+                  value: m.value,
+                  label: m.label,
+                }))}
                 selectedValue={selectedManager.value}
                 onChange={(value) => {
-                  const idx = Math.max(0, MANAGERS.findIndex((m) => m.value === value));
+                  const idx = Math.max(
+                    0,
+                    MANAGERS.findIndex((m) => m.value === value),
+                  );
                   setManagerIndex(idx);
                   setFieldValues(fieldValuesFor(MANAGERS[idx], {}));
                 }}
@@ -539,7 +601,7 @@ export const AppImageDetailView: React.FC<AppImageDetailViewProps> = ({
                       onChange={(value) => setField(f.key, value)}
                     />
                   </PanelSectionRow>
-                )
+                ),
               )}
             </div>
 
@@ -548,18 +610,30 @@ export const AppImageDetailView: React.FC<AppImageDetailViewProps> = ({
               flow-children="horizontal"
             >
               <div style={{ flex: 1 }}>
-                <ActionButton variant="primary" width="100%" onClick={save} disabled={saving}>
+                <ActionButton
+                  variant="primary"
+                  width="100%"
+                  onClick={save}
+                  disabled={saving}
+                >
                   {saving ? t("saving") : t("save")}
                 </ActionButton>
               </div>
-              <ActionButton onClick={() => setEditingConfig(false)} disabled={saving}>
+              <ActionButton
+                onClick={() => setEditingConfig(false)}
+                disabled={saving}
+              >
                 {t("cancel")}
               </ActionButton>
             </Focusable>
           </>
         ) : (
           <div style={{ marginTop: 16 }}>
-            <ActionButton width="100%" onClick={openEditConfig} disabled={!!busy}>
+            <ActionButton
+              width="100%"
+              onClick={openEditConfig}
+              disabled={!!busy}
+            >
               <FiSettings size={14} style={{ marginRight: 6 }} />
               {manager ? t("edit_source") : t("configure_source")}
             </ActionButton>
@@ -610,12 +684,29 @@ export const AppImageDetailView: React.FC<AppImageDetailViewProps> = ({
               flow-children="horizontal"
             >
               <div style={{ flex: 1 }}>
-                <ActionButton width="100%" onClick={onToggleExclude} disabled={!!busy || saving}>
+                <ActionButton
+                  width="100%"
+                  onClick={onToggleExclude}
+                  disabled={!!busy || saving}
+                >
                   <div
-                    style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: 2,
+                    }}
                   >
-                    {app.excluded ? <FiEyeOff size={14} /> : <FiEye size={14} />}
-                    <span>{app.excluded ? tApps("follow_button") : tApps("ignore_button")}</span>
+                    {app.excluded ? (
+                      <FiEyeOff size={14} />
+                    ) : (
+                      <FiEye size={14} />
+                    )}
+                    <span>
+                      {app.excluded
+                        ? tApps("follow_button")
+                        : tApps("ignore_button")}
+                    </span>
                   </div>
                 </ActionButton>
               </div>
@@ -626,9 +717,18 @@ export const AppImageDetailView: React.FC<AppImageDetailViewProps> = ({
                   disabled={!!busy || saving}
                 >
                   <div
-                    style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: 2,
+                    }}
                   >
-                    {app.auto_update_skipped ? <FiPause size={14} /> : <FiRefreshCw size={14} />}
+                    {app.auto_update_skipped ? (
+                      <FiPause size={14} />
+                    ) : (
+                      <FiRefreshCw size={14} />
+                    )}
                     <span>
                       {app.auto_update_skipped
                         ? tApps("auto_update_unskip_button")

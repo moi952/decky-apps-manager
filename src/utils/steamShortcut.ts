@@ -46,7 +46,9 @@ export const getShortcutIdentifier = (app: AppEntry): string | null => {
 // branch, arch — see flatpak.py's launch_command docstring), so it's
 // resolved backend-side from that app's own exported .desktop file
 // rather than guessed here. AppImage needs no such lookup.
-export const resolveShortcutParams = async (app: AppEntry): Promise<ShortcutParams | null> => {
+export const resolveShortcutParams = async (
+  app: AppEntry,
+): Promise<ShortcutParams | null> => {
   if (app.kind === "flatpak" && app.app_id) {
     const resolved = await call<[string], [string, string] | null>(
       "get_flatpak_launch_command",
@@ -59,7 +61,11 @@ export const resolveShortcutParams = async (app: AppEntry): Promise<ShortcutPara
     // No exported .desktop entry found (rare) — falls back to the plain
     // form, which works for most apps but not ones needing their own
     // --command= (multi-binary Flatpaks like Gear Lever or Chrome).
-    return { exe: "/usr/bin/flatpak", startDir: "/usr/bin", launchOptions: `run ${app.app_id}` };
+    return {
+      exe: "/usr/bin/flatpak",
+      startDir: "/usr/bin",
+      launchOptions: `run ${app.app_id}`,
+    };
   }
   if (app.kind === "appimage" && app.file_path) {
     // Confirmed on-device: the AppImage itself as Target doesn't work —
@@ -136,7 +142,10 @@ export const setSteamShortcutCapsuleArtwork = (
 // frontend-side, see rasterizeIconToPngBase64) is written to a plain file
 // first via the backend's save_shortcut_icon_png (a bare file write, not
 // a conversion — nothing there depends on a system package either).
-export const setSteamShortcutIconPath = (appId: number, iconPath: string): void => {
+export const setSteamShortcutIconPath = (
+  appId: number,
+  iconPath: string,
+): void => {
   SteamClient.Apps.SetShortcutIcon(appId >>> 0, iconPath);
 };
 
