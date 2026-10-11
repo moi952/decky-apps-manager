@@ -89,12 +89,12 @@ export const FlatpakDetailView: React.FC<FlatpakDetailViewProps> = ({
     // Flathub-specific (see flatpak.get_screenshots's own note) — an app
     // from another remote (e.g. Anatase) just gets an empty list here,
     // and ScreenshotCarousel already renders nothing for that.
-    if (app.app_id) {
+    if (app.app_id && !app.runtime) {
       call<[string], string[]>("get_flatpak_screenshots", app.app_id).then(
         setScreenshots,
       );
     }
-  }, [app.app_id]);
+  }, [app.app_id, app.runtime]);
 
   const runUpdate = async () => {
     setResult(null);
@@ -318,7 +318,7 @@ export const FlatpakDetailView: React.FC<FlatpakDetailViewProps> = ({
           </div>
         )}
 
-        {confirmingRemove ? (
+        {app.runtime ? null : confirmingRemove ? (
           <div style={{ marginTop: 16 }}>
             <InlineConfirm
               description={t("remove_confirm_description", { name: app.name })}

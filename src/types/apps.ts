@@ -11,6 +11,10 @@ export interface AppEntry {
   // e.g. a signature error) — distinct from a confirmed "no update
   // available". Flatpak only for now; always false for AppImages.
   update_check_failed: boolean;
+  // flatpak only — installed by hand from a local bundle, so its origin
+  // remote is disabled and there's nothing to check against. Expected,
+  // not an error: it simply never has updates.
+  manually_installed?: boolean;
   excluded: boolean;
   // Stays visible/notified about, but the auto-update loop won't touch
   // it on its own — distinct from `excluded`, which hides it entirely.
@@ -18,6 +22,11 @@ export interface AppEntry {
   // flatpak only
   app_id?: string;
   scope?: "system" | "user";
+  // A runtime (Freedesktop/GNOME/KDE Platform, ...) rather than an app —
+  // only ever listed when it has an update. app_id is then the full
+  // "id/arch/branch" ref. Not launchable, and not safe to uninstall from
+  // here (apps may depend on it).
+  runtime?: boolean;
   // appimage only
   file_path?: string;
   needs_update_source?: boolean;

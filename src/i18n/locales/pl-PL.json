@@ -77,6 +77,7 @@
     "updating": "Aktualizowanie…",
     "update_failed": "Aktualizacja nie powiodła się",
     "update_check_failed_label": "Nie udało się zweryfikować",
+    "manually_installed_label": "Zainstalowano ręcznie — brak aktualizacji",
     "open_app_detail": "Otwórz szczegóły aplikacji",
     "check_failed_notice": "Nie udało się sprawdzić {{count}} aplikacji",
     "uninstall_failed": "Usuwanie nie powiodło się",

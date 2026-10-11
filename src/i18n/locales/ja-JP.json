@@ -77,6 +77,7 @@
     "updating": "更新中…",
     "update_failed": "更新に失敗しました",
     "update_check_failed_label": "確認できませんでした",
+    "manually_installed_label": "手動インストール — 更新なし",
     "open_app_detail": "アプリの詳細を開く",
     "check_failed_notice": "{{count}} 件のアプリを確認できませんでした",
     "uninstall_failed": "削除に失敗しました",

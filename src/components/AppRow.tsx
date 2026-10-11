@@ -96,6 +96,11 @@ export const AppRow: React.FC<AppRowProps> = ({
               {t("update_check_failed_label")}
             </div>
           )}
+          {app.manually_installed && (
+            <div style={{ fontSize: 10, opacity: 0.6 }}>
+              {t("manually_installed_label")}
+            </div>
+          )}
           {app.needs_update_source && mode === "list" && (
             <div style={{ fontSize: 10, color: "#f5a623" }}>
               {t("needs_update_source")}

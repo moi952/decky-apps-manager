@@ -77,6 +77,7 @@
     "updating": "Güncelleniyor…",
     "update_failed": "Güncelleme başarısız oldu",
     "update_check_failed_label": "Doğrulanamadı",
+    "manually_installed_label": "Elle kuruldu — güncelleme yok",
     "open_app_detail": "Uygulama ayrıntılarını aç",
     "check_failed_notice": "{{count}} uygulama kontrol edilemedi",
     "uninstall_failed": "Kaldırma başarısız oldu",

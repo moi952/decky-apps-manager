@@ -77,6 +77,7 @@
     "updating": "正在更新…",
     "update_failed": "更新失败",
     "update_check_failed_label": "无法验证",
+    "manually_installed_label": "手动安装 — 无更新",
     "open_app_detail": "打开应用详情",
     "check_failed_notice": "{{count}} 个应用无法检查",
     "uninstall_failed": "移除失败",

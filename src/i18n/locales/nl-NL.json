@@ -77,6 +77,7 @@
     "updating": "Bijwerken…",
     "update_failed": "Bijwerken mislukt",
     "update_check_failed_label": "Kon niet verifiëren",
+    "manually_installed_label": "Handmatig geïnstalleerd — geen updates",
     "open_app_detail": "Open app-details",
     "check_failed_notice": "{{count}} app(s) konden niet worden gecontroleerd",
     "uninstall_failed": "Verwijderen mislukt",

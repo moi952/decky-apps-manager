@@ -23,7 +23,7 @@ import re
 import shlex
 import shutil
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 import decky
 
@@ -162,13 +162,240 @@ async def _check_update(
     return info.get("version") or "", False
 
 
+# One row of `flatpak update`'s pending-changes table: "1.\t   \t<ref>\t
+# <branch>\t<op>[\t<remote>\t< size>]" — op is i(nstall)/u(pdate)/r(emove).
+_UPDATE_ROW = re.compile(
+    r"^\s*\d+\.\t[^\t]*\t([^\t]+)\t([^\t]*)\t([iur])(?:\t([^\t]*))?"
+)
+
+# Extensions that always ride along with their parent — Bazaar
+# (update-worker.c's should_skip_extension_ref) leaves them out of its own
+# update list for the same reason, and so does this.
+_SKIPPED_SUFFIXES = (".Locale", ".Debug", ".Sources")
+
+# (scope, new ref) -> {"remote": ..., "old": [refs]} for runtimes flatpak
+# wants to *replace* with a successor (an "i" row paired with an "r" row,
+# e.g. an NVIDIA GL driver bump). Filled by list_runtime_updates, read by
+# update_one/update_many.
+_pending_rebases: Dict[Tuple[str, str], Dict[str, Any]] = {}
+
+
+def _common_prefix_len(a: str, b: str) -> int:
+    n = 0
+    for x, y in zip(a, b):
+        if x != y:
+            break
+        n += 1
+    return n
+
+
+async def _runtime_names(
+    scope: proc_env.Scope, remotes: Set[str]
+) -> Dict[Tuple[str, str], str]:
+    """Display names (appstream) for runtimes, keyed by (id, branch) — the
+    same source Bazaar uses (appdata name, falling back to the bare id).
+    Installed ones come from `flatpak list`; a not-yet-installed successor
+    only exists in its remote, hence remote-ls for those."""
+    names: Dict[Tuple[str, str], str] = {}
+    commands = [["flatpak", "list", "--runtime", scope_flag(scope),
+                 "--columns=application,branch,name"]]
+    commands += [["flatpak", "remote-ls", remote, scope_flag(scope), "--runtime",
+                  "--columns=application,branch,name"] for remote in sorted(remotes)]
+    for cmd in commands:
+        code, out, _ = await proc_env.run(cmd, scope, _LOG, timeout=30)
+        if code != 0:
+            continue
+        for rid, branch, name in _parse_columns(out, 3):
+            if name.strip():
+                names.setdefault((rid.strip(), branch.strip()), name.strip())
+    return names
+
+
+async def _runtime_updates_from_table(
+    scope: proc_env.Scope, known_app_ids: Set[str]
+) -> List[Dict[str, Any]]:
+    """Fallback when libflatpak isn't reachable (see list_runtime_updates).
+
+    Runtimes and extensions (Freedesktop/GNOME/KDE Platform, GL drivers,
+    ...) with a pending change — what Discover files under "Application
+    support". list_installed's `--app` never sees these, so without this
+    they were never detected or updated at all.
+
+    Read from `flatpak update`'s own pending-changes table (answering "n"
+    to its prompt, so nothing is applied) rather than `remote-ls
+    --updates`: confirmed on-device the latter misses real pending
+    changes that this table and Discover both list.
+
+    "u" rows are plain updates. An "i" row is a runtime being *replaced* by
+    a successor (flatpak pairs it with an "r" row for the old one): no
+    per-ref `flatpak update` can do that (confirmed on-device — neither
+    ref accepts it), but installing the new ref then uninstalling the old
+    one is exactly what flatpak's own transaction does for it, so that is
+    what update_one/update_many run for these entries.
+
+    Apps in the same table are skipped via known_app_ids (list_installed
+    already covers them), and so are .Locale/.Debug/.Sources extensions.
+
+    Best-effort — a failure here must never break the app list itself."""
+    # Exit code deliberately ignored: answering "n" makes flatpak exit 1
+    # (aborted) even though the table above it was printed fine — confirmed
+    # on-device, and checking it threw away every real result. A timeout or
+    # spawn failure comes back as -1 with empty stdout, so it parses to [].
+    _, out, _ = await proc_env.run(
+        ["flatpak", "update", scope_flag(scope)],
+        scope, _LOG, timeout=60, stdin_data=b"n\n",
+    )
+
+    rows = []
+    for line in out.splitlines():
+        m = _UPDATE_ROW.match(line)
+        if m:
+            rows.append((m.group(3), m.group(1).strip(), m.group(2).strip(), (m.group(4) or "").strip()))
+
+    removals = [(rid, br) for op, rid, br, _ in rows if op == "r"]
+    names = await _runtime_names(scope, {remote for op, _, _, remote in rows if op == "i" and remote}) if rows else {}
+    runtimes = []
+    seen: Set[str] = set()
+    for op, runtime_id, branch, remote in rows:
+        if op == "r" or runtime_id in known_app_ids or runtime_id.endswith(_SKIPPED_SUFFIXES):
+            continue
+        ref = f"{runtime_id}//{branch}" if branch else runtime_id
+        if ref in seen:
+            continue
+        seen.add(ref)
+        if op == "i":
+            if not remote:
+                continue
+            old = [
+                f"{rid}//{br}" for rid, br in removals
+                if br == branch and _common_prefix_len(rid, runtime_id) > runtime_id.rfind(".") + 1
+            ]
+            _pending_rebases[(scope, ref)] = {"remote": remote, "old": old}
+        runtimes.append({
+            "id": f"flatpak:{ref}:{scope}",
+            "app_id": ref,
+            "kind": "flatpak",
+            "runtime": True,
+            "name": names.get((runtime_id, branch), runtime_id),
+            "_branch": branch,
+            "version": None,
+            "available_version": None,
+            "has_update": True,
+            "update_check_failed": False,
+            "scope": scope,
+        })
+    # Two branches of one runtime (or the same one in both scopes' lists)
+    # would otherwise read identically — only then is the branch worth showing.
+    counts: Dict[str, int] = {}
+    for r in runtimes:
+        counts[r["name"]] = counts.get(r["name"], 0) + 1
+    for r in runtimes:
+        branch = r.pop("_branch")
+        if counts[r["name"]] > 1 and branch and branch not in r["name"]:
+            r["name"] = f"{r['name']} {branch}"
+    return runtimes
+
+
+# Same query Discover and Bazaar (update-worker.c) make:
+# flatpak_installation_list_installed_refs_for_update. It also returns the
+# *parent* of any extension with a pending change — confirmed on-device,
+# that is why Discover lists Freedesktop/GNOME/KDE Platform as "updates"
+# even though their own commit already equals the remote's: each carries a
+# related extension (NVIDIA GL driver, Locale) that has one. `flatpak
+# update <parent>` then updates those related refs too, which is the only
+# per-ref way to do it. The plain CLI table (below) never shows these
+# parents, so it can't be the source of truth for what Discover reports.
+_LIBFLATPAK_SCRIPT = """
+import sys, gi
+gi.require_version("Flatpak", "1.0")
+from gi.repository import Flatpak
+inst = Flatpak.Installation.new_system(None) if sys.argv[1] == "system" else Flatpak.Installation.new_user(None)
+for r in inst.list_installed_refs_for_update(None):
+    if r.get_kind() != Flatpak.RefKind.RUNTIME:
+        continue
+    print("\\t".join([r.get_name(), r.get_arch(), r.get_branch(), r.get_appdata_name() or ""]))
+"""
+
+
+async def list_runtime_updates(
+    scope: proc_env.Scope, known_app_ids: Set[str]
+) -> List[Dict[str, Any]]:
+    """Runtimes with something to update, as Discover and Bazaar report
+    them. Uses libflatpak through the system Python's GObject bindings; if
+    those aren't there (or the call fails), falls back to reading
+    `flatpak update`'s own table, which lacks the parent entries but still
+    finds the extensions themselves.
+
+    .Locale/.Debug/.Sources are skipped, like Bazaar does — they ride along
+    with their parent. Best-effort: never allowed to break the app list."""
+    code, out, _ = await proc_env.run(
+        ["/usr/bin/python3", "-c", _LIBFLATPAK_SCRIPT, scope],
+        scope, _LOG, timeout=60,
+    )
+    if code != 0:
+        return await _runtime_updates_from_table(scope, known_app_ids)
+
+    runtimes = []
+    seen: Set[str] = set()
+    for line in out.splitlines():
+        parts = line.split("\t")
+        if len(parts) != 4:
+            continue
+        runtime_id, arch, branch, name = (p.strip() for p in parts)
+        if not runtime_id or runtime_id.endswith(_SKIPPED_SUFFIXES):
+            continue
+        ref = f"{runtime_id}/{arch}/{branch}"
+        if ref in seen:
+            continue
+        seen.add(ref)
+        runtimes.append({
+            "id": f"flatpak:{ref}:{scope}",
+            "app_id": ref,
+            "kind": "flatpak",
+            "runtime": True,
+            "name": name or runtime_id,
+            "version": None,
+            "available_version": None,
+            "has_update": True,
+            "update_check_failed": False,
+            "scope": scope,
+        })
+    return runtimes
+
+
+async def _disabled_remotes(scope: proc_env.Scope) -> Set[str]:
+    """Remotes flatpak keeps but never talks to — typically the
+    "<name>-origin" one flatpak creates when installing from a local
+    .flatpak bundle. Hidden from a plain `flatpak remotes`, hence
+    --show-disabled."""
+    code, out, _ = await proc_env.run(
+        ["flatpak", "remotes", scope_flag(scope), "--show-disabled",
+         "--columns=name,options"],
+        scope, _LOG, timeout=15,
+    )
+    if code != 0:
+        return set()
+    disabled = set()
+    for line in out.splitlines():
+        name, _, options = line.partition("\t")
+        if "disabled" in options.split(","):
+            disabled.add(name.strip())
+    return disabled
+
+
 async def list_apps_with_updates(scope: proc_env.Scope) -> List[Dict[str, Any]]:
     apps = await list_installed(scope)
+    disabled = await _disabled_remotes(scope)
     sem = asyncio.Semaphore(_CHECK_CONCURRENCY)
 
     async def _check(app: Dict[str, Any]) -> None:
         active = app.pop("_active_commit", "")
         origin = app.pop("_origin", "")
+        if origin in disabled:
+            # Installed by hand from a bundle — there's no remote to check
+            # against, so "no updates, ever" is the answer, not a failure.
+            app["manually_installed"] = True
+            return
         async with sem:
             available, failed = await _check_update(scope, app["app_id"], active, origin)
         if available is not None:
@@ -177,6 +404,11 @@ async def list_apps_with_updates(scope: proc_env.Scope) -> List[Dict[str, Any]]:
         app["update_check_failed"] = failed
 
     await asyncio.gather(*(_check(app) for app in apps))
+
+    try:
+        apps.extend(await list_runtime_updates(scope, {a["app_id"] for a in apps}))
+    except Exception as e:
+        decky.logger.error(f"[{_LOG}] runtime update check ({scope}): {e}")
     return apps
 
 
@@ -195,7 +427,34 @@ async def check_single(app_id: str, scope: proc_env.Scope) -> Optional[bool]:
     return available is not None
 
 
+async def _apply_rebase(app_id: str, scope: proc_env.Scope) -> bool:
+    """Install the successor runtime, then drop the one it replaces."""
+    info = _pending_rebases.get((scope, app_id))
+    if info is None:
+        # Plugin restarted since the check that found it — look again.
+        await list_runtime_updates(scope, set())
+        info = _pending_rebases.get((scope, app_id))
+    if info is None:
+        return False
+    code, _, _ = await proc_env.run(
+        ["flatpak", "install", scope_flag(scope), info["remote"], app_id,
+         "-y", "--noninteractive"],
+        scope, _LOG, timeout=1800,
+    )
+    if code != 0:
+        return False
+    for old in info["old"]:
+        await proc_env.run(
+            ["flatpak", "uninstall", "-y", "--noninteractive", scope_flag(scope), old],
+            scope, _LOG, timeout=300,
+        )
+    _pending_rebases.pop((scope, app_id), None)
+    return True
+
+
 async def update_one(app_id: str, scope: proc_env.Scope) -> bool:
+    if (scope, app_id) in _pending_rebases:
+        return await _apply_rebase(app_id, scope)
     code, _, _ = await proc_env.run(
         ["flatpak", "update", "-y", "--noninteractive", scope_flag(scope), app_id],
         scope, _LOG, timeout=600,
@@ -214,11 +473,19 @@ async def uninstall_one(app_id: str, scope: proc_env.Scope) -> bool:
 async def update_many(app_ids: List[str], scope: proc_env.Scope) -> bool:
     if not app_ids:
         return True
-    code, _, _ = await proc_env.run(
-        ["flatpak", "update", "-y", "--noninteractive", scope_flag(scope), *app_ids],
-        scope, _LOG, timeout=1800,
-    )
-    return code == 0
+    rebases = [i for i in app_ids if (scope, i) in _pending_rebases]
+    plain = [i for i in app_ids if i not in rebases]
+    ok = True
+    if plain:
+        code, _, _ = await proc_env.run(
+            ["flatpak", "update", "-y", "--noninteractive", scope_flag(scope), *plain],
+            scope, _LOG, timeout=1800,
+        )
+        ok = code == 0
+    for ref in rebases:
+        if not await _apply_rebase(ref, scope):
+            ok = False
+    return ok
 
 
 def icon_path(app_id: str, scope: proc_env.Scope) -> Optional[Path]:

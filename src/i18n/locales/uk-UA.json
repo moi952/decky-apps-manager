@@ -77,6 +77,7 @@
     "updating": "Оновлення…",
     "update_failed": "Не вдалося оновити",
     "update_check_failed_label": "Не вдалося перевірити",
+    "manually_installed_label": "Встановлено вручну — без оновлень",
     "open_app_detail": "Відкрити відомості про додаток",
     "check_failed_notice": "Не вдалося перевірити додатків: {{count}}",
     "uninstall_failed": "Не вдалося видалити",

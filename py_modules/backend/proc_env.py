@@ -161,6 +161,7 @@ async def run(
     log_prefix: str,
     timeout: Optional[float] = 60,
     capture_output: bool = True,
+    stdin_data: Optional[bytes] = None,
 ) -> Tuple[int, str, str]:
     """Run a subprocess with the right env/identity for `scope`, logging the
     command and any failure. Returns (returncode, stdout, stderr);
@@ -182,13 +183,14 @@ async def run(
     try:
         proc = await asyncio.create_subprocess_exec(
             *args,
+            stdin=asyncio.subprocess.PIPE if stdin_data is not None else None,
             stdout=asyncio.subprocess.PIPE if capture_output else asyncio.subprocess.DEVNULL,
             stderr=asyncio.subprocess.PIPE if capture_output else asyncio.subprocess.DEVNULL,
             env=build_env(scope),
             **_drop_privileges_kwargs(scope),
         )
         if capture_output:
-            out, err = await asyncio.wait_for(proc.communicate(), timeout=timeout)
+            out, err = await asyncio.wait_for(proc.communicate(input=stdin_data), timeout=timeout)
         else:
             await asyncio.wait_for(proc.wait(), timeout=timeout)
             out, err = b"", b""

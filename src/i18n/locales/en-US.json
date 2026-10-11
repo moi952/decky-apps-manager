@@ -77,6 +77,7 @@
     "updating": "Updating…",
     "update_failed": "Update failed",
     "update_check_failed_label": "Couldn't verify",
+    "manually_installed_label": "Installed manually — no updates",
     "open_app_detail": "Open app details",
     "check_failed_notice": "{{count}} app(s) couldn't be checked",
     "uninstall_failed": "Removal failed",

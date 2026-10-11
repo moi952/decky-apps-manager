@@ -27,7 +27,8 @@ export interface ShortcutParams {
 // button renders at all, before doing any of resolveShortcutParams's
 // (possibly backend-round-tripping) work.
 export const canBuildShortcut = (app: AppEntry): boolean =>
-  (app.kind === "flatpak" && !!app.app_id) || (app.kind === "appimage" && !!app.file_path);
+  (app.kind === "flatpak" && !!app.app_id && !app.runtime) ||
+  (app.kind === "appimage" && !!app.file_path);
 
 // Whichever string uniquely identifies this app in a shortcuts.vdf entry
 // (the flatpak app id, or the AppImage's own path) — passed to the
