@@ -1,5 +1,9 @@
 # decky-apps-manager
 
+<p align="center">
+  <a href="https://discord.gg/yWXXAC2AKc"><img alt="Join the Discord" src="https://img.shields.io/badge/Join%20the%20Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white"></a>
+</p>
+
 ![GitHub Downloads](https://img.shields.io/github/downloads/moi952/decky-apps-manager/total)
 ![Downloads latest](https://img.shields.io/github/downloads/moi952/decky-apps-manager/latest/total)
 ![Stars](https://img.shields.io/github/stars/moi952/decky-apps-manager)

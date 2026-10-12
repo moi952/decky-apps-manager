@@ -1,14 +1,15 @@
 import React from "react";
-import { Focusable, PanelSection, PanelSectionRow, ToggleField } from "@decky/ui";
+import { Focusable, Navigation, PanelSection, PanelSectionRow, ToggleField } from "@decky/ui";
 import { ActionButton, AnchoredDropdown, CollapsibleSection } from "@moi952/decky-ui-kit";
 import { UpdateHistorySection, GitHubSection, SupportSection, getWhatsNewVersions } from "@moi952/decky-plugin-toolkit";
 import { useTranslation } from "react-i18next";
 import { FiArrowLeft } from "react-icons/fi";
+import { FaDiscord } from "react-icons/fa";
 
 import { AutoUpdateHistoryList } from "../components/AutoUpdateHistoryList";
 import { useApps } from "../context/AppsContext";
 import { fetchPluginReleases } from "../utils/githubReleases";
-import { BUG_REPORT_URL, FEATURE_REQUEST_URL } from "../utils/links";
+import { BUG_REPORT_URL, DISCORD_URL, FEATURE_REQUEST_URL } from "../utils/links";
 
 interface SettingsViewProps {
   onBack: () => void;
@@ -121,6 +122,17 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onBack }) => {
         featureRequestUrl={FEATURE_REQUEST_URL}
         bugReportUrl={BUG_REPORT_URL}
       />
+      <PanelSection title="Discord">
+        <PanelSectionRow>
+          <ActionButton
+            onClick={() => Navigation.NavigateToExternalWeb(DISCORD_URL)}
+            width="100%"
+          >
+            <FaDiscord size={14} style={{ marginRight: 6 }} />
+            Discord
+          </ActionButton>
+        </PanelSectionRow>
+      </PanelSection>
       <SupportSection />
     </div>
   );

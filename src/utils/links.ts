@@ -2,5 +2,6 @@ const REPO_ISSUES_URL = "https://github.com/moi952/decky-apps-manager/issues/new
 
 export const FEATURE_REQUEST_URL = `${REPO_ISSUES_URL}?template=new_feature.md`;
 export const BUG_REPORT_URL = `${REPO_ISSUES_URL}?template=bug_report.md`;
+export const DISCORD_URL = "https://discord.gg/yWXXAC2AKc";
 // Ko-fi is the same for every one of moi952's plugins — SupportSection's
 // own default (DEFAULT_KOFI_URL), not repeated here.
