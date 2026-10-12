@@ -69,6 +69,15 @@
         "Gear Lever : correction de plusieurs bugs de détection — l'installer ou le désinstaller (par le plugin, Discover, ou en ligne de commande) se reflète maintenant fiablement dans la liste et dans la notice, y compris après un redémarrage de Steam",
         "Refonte visuelle de la notice d'installation de Gear Lever : même taille que les autres cartes, boutons navigables horizontalement, et barre de progression qui ne déborde plus"
       ]
+    },
+    "v0_5_0": {
+      "title": "Nouveautés de la version 0.5.0",
+      "items": [
+        "Les mises à jour de runtimes (Freedesktop, GNOME et KDE Platform, pilotes GPU) sont maintenant détectées et installées, comme dans Discover",
+        "Les apps installées à la main depuis un paquet (comme WiVRn) ne sont plus signalées en erreur — elles sont indiquées comme installées manuellement",
+        "Les apps sans icône affichent maintenant un repère à la place d'un espace vide",
+        "Les notifications affichent maintenant l'icône d'Apps Manager et arrivent même quand le panneau est fermé"
+      ]
     }
   },
   "apps_view": {

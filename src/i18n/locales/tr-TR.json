@@ -69,6 +69,15 @@
         "Gear Lever: birkaç algılama hatası düzeltildi — onu yüklemek veya kaldırmak (eklenti, Discover ya da komut satırı üzerinden) artık uygulama listesine ve yükleme bildirimine güvenilir şekilde yansıyor, Steam yeniden başlatıldıktan sonra bile",
         "Gear Lever yükleme bildirimi yeniden tasarlandı: diğer kartlarla aynı boyut, yatay olarak gezinilebilen düğmeler ve artık taşmayan bir ilerleme çubuğu"
       ]
+    },
+    "v0_5_0": {
+      "title": "0.5.0 sürümündeki yenilikler",
+      "items": [
+        "Çalışma zamanı (Freedesktop, GNOME ve KDE Platform, GPU sürücüleri) güncellemeleri artık Discover'daki gibi algılanıp kuruluyor",
+        "Bir paketten elle kurulan uygulamalar (WiVRn gibi) artık hata olarak işaretlenmiyor — elle kurulmuş olarak gösteriliyor",
+        "Simgesi olmayan uygulamalarda artık boşluk yerine yer tutucu görünüyor",
+        "Bildirimler artık Apps Manager simgesini gösteriyor ve panel kapalıyken bile ulaşıyor"
+      ]
     }
   },
   "apps_view": {

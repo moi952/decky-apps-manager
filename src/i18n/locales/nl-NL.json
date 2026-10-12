@@ -69,6 +69,15 @@
         "Gear Lever: meerdere detectiebugs opgelost — installeren of deïnstalleren (via de plugin, Discover, of de opdrachtregel) wordt nu betrouwbaar weergegeven in de app-lijst en de installatiemelding, ook na een herstart van Steam",
         "De installatiemelding van Gear Lever is herzien: dezelfde grootte als andere kaarten, horizontaal navigeerbare knoppen, en een voortgangsbalk die niet meer overloopt"
       ]
+    },
+    "v0_5_0": {
+      "title": "Nieuw in 0.5.0",
+      "items": [
+        "Runtime-updates (Freedesktop-, GNOME- en KDE-Platform, gpu-stuurprogramma's) worden nu net als in Discover gedetecteerd en geïnstalleerd",
+        "Apps die met de hand uit een pakket zijn geïnstalleerd (zoals WiVRn) worden niet meer als fout gemarkeerd, maar als handmatig geïnstalleerd aangeduid",
+        "Apps zonder pictogram krijgen nu een tijdelijke afbeelding in plaats van een lege plek",
+        "Meldingen tonen nu het pictogram van Apps Manager en komen ook aan als het paneel gesloten is"
+      ]
     }
   },
   "apps_view": {

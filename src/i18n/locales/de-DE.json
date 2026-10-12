@@ -69,6 +69,15 @@
         "Gear Lever: mehrere Erkennungsfehler behoben — das Installieren oder Deinstallieren (über das Plugin, Discover oder die Kommandozeile) spiegelt sich jetzt zuverlässig in der App-Liste und im Installationshinweis wider, auch nach einem Steam-Neustart",
         "Der Gear-Lever-Installationshinweis wurde überarbeitet: gleiche Größe wie andere Karten, horizontal navigierbare Buttons und ein Fortschrittsbalken, der nicht mehr überläuft"
       ]
+    },
+    "v0_5_0": {
+      "title": "Neuigkeiten in 0.5.0",
+      "items": [
+        "Runtime-Updates (Freedesktop-, GNOME- und KDE-Platform, GPU-Treiber) werden jetzt wie in Discover erkannt und installiert",
+        "Von Hand aus einem Paket installierte Apps (z. B. WiVRn) werden nicht mehr als Fehler markiert, sondern als manuell installiert gekennzeichnet",
+        "Apps ohne Symbol zeigen jetzt einen Platzhalter statt einer Lücke",
+        "Benachrichtigungen zeigen jetzt das Apps-Manager-Symbol und kommen auch bei geschlossenem Panel an"
+      ]
     }
   },
   "apps_view": {
