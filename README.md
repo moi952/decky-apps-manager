@@ -10,11 +10,12 @@ Apps Manager keeps track of every Flatpak app you have installed (including the 
 
 > 🙏 **Thanks to [Gearlever](https://github.com/mijorus/gearlever)** by [mijorus](https://github.com/mijorus) — the AppImage side of this plugin runs entirely on top of it.
 
-### ✨ New in 0.4.0
+### ✨ New in 0.5.0
 
-- Add an installed Flatpak or AppImage as a Steam shortcut, or remove it — with detection for one that's already there, even added by hand
-- Gear Lever: fixed several detection bugs — installing or uninstalling it (via the plugin, Discover, or the command line) is now reliably reflected in the apps list and the install notice, even across a Steam restart
-- Reworked the Gear Lever install notice: same size as other cards, horizontally navigable buttons, and a progress bar that no longer overflows
+- Runtime updates (Freedesktop, GNOME and KDE Platform, GPU drivers) are now detected and installed, just like in Discover
+- Apps installed by hand from a bundle (like WiVRn) are no longer flagged as errors — they're labelled as installed manually
+- Apps without an icon now get a placeholder instead of an empty gap
+- Notifications now show the Apps Manager icon and arrive even when the panel is closed
 
 ---
 
