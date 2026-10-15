@@ -30,7 +30,7 @@ const ICON_DATA_URL =
   "data:image/svg+xml;utf8," +
   encodeURIComponent(
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-      <rect width="32" height="32" rx="6" fill="#1a9fff"/>
+      <rect width="32" height="32" fill="#1a9fff"/>
       <path d="M11 13V11a5 5 0 0 1 10 0v2h3.2l1.1 13.5a1.5 1.5 0 0 1-1.5 1.5H8.2a1.5 1.5 0 0 1-1.5-1.5L7.8 13H11zm2 0h6v-2a3 3 0 0 0-6 0v2z" fill="#fff"/>
     </svg>`,
   );
