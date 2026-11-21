@@ -78,6 +78,14 @@
         "Apps without an icon now get a placeholder instead of an empty gap",
         "Notifications now show the Apps Manager icon and arrive even when the panel is closed"
       ]
+    },
+    "v0_6_0": {
+      "title": "What's new in 0.6.0",
+      "items": [
+        "Discord link in Settings",
+        "The notification icon no longer has rounded corners",
+        "Better compatibility with Steam themes (such as Float): icons, focus highlight, section headers and backgrounds"
+      ]
     }
   },
   "apps_view": {

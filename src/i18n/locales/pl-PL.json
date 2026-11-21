@@ -78,6 +78,14 @@
         "Aplikacje bez ikony pokazują teraz symbol zastępczy zamiast pustego miejsca",
         "Powiadomienia pokazują teraz ikonę Apps Manager i docierają nawet przy zamkniętym panelu"
       ]
+    },
+    "v0_6_0": {
+      "title": "Nowości w wersji 0.6.0",
+      "items": [
+        "Link do Discorda w Ustawieniach",
+        "Ikona powiadomień nie ma już zaokrąglonych rogów",
+        "Lepsza zgodność z motywami Steam (np. Float): ikony, podświetlenie fokusu, nagłówki sekcji i tła"
+      ]
     }
   },
   "apps_view": {

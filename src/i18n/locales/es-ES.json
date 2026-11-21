@@ -78,6 +78,14 @@
         "Las apps sin icono ahora muestran un marcador en lugar de un hueco vacío",
         "Las notificaciones ahora muestran el icono de Apps Manager y llegan incluso con el panel cerrado"
       ]
+    },
+    "v0_6_0": {
+      "title": "Novedades de la versión 0.6.0",
+      "items": [
+        "Enlace de Discord en los Ajustes",
+        "El icono de las notificaciones ya no tiene esquinas redondeadas",
+        "Mejor compatibilidad con los temas de Steam (como Float): iconos, resaltado del foco, encabezados de sección y fondos"
+      ]
     }
   },
   "apps_view": {

@@ -78,6 +78,14 @@
         "Apps sem ícone agora mostram um ícone provisório em vez de um espaço vazio",
         "As notificações agora mostram o ícone do Apps Manager e chegam mesmo com o painel fechado"
       ]
+    },
+    "v0_6_0": {
+      "title": "Novidades da versão 0.6.0",
+      "items": [
+        "Link do Discord nas Configurações",
+        "O ícone das notificações não tem mais cantos arredondados",
+        "Melhor compatibilidade com temas do Steam (como o Float): ícones, destaque de foco, títulos de seção e fundos"
+      ]
     }
   },
   "apps_view": {

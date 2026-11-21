@@ -78,6 +78,14 @@
         "Apps ohne Symbol zeigen jetzt einen Platzhalter statt einer Lücke",
         "Benachrichtigungen zeigen jetzt das Apps-Manager-Symbol und kommen auch bei geschlossenem Panel an"
       ]
+    },
+    "v0_6_0": {
+      "title": "Neuigkeiten in 0.6.0",
+      "items": [
+        "Discord-Link in den Einstellungen",
+        "Das Benachrichtigungssymbol hat keine abgerundeten Ecken mehr",
+        "Bessere Kompatibilität mit Steam-Themes (z. B. Float): Symbole, Fokus-Hervorhebung, Abschnittsüberschriften und Hintergründe"
+      ]
     }
   },
   "apps_view": {

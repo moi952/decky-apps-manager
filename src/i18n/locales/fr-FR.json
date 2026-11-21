@@ -78,6 +78,14 @@
         "Les apps sans icône affichent maintenant un repère à la place d'un espace vide",
         "Les notifications affichent maintenant l'icône d'Apps Manager et arrivent même quand le panneau est fermé"
       ]
+    },
+    "v0_6_0": {
+      "title": "Nouveautés de la version 0.6.0",
+      "items": [
+        "Lien Discord dans les Réglages",
+        "L'icône des notifications n'a plus de coins arrondis",
+        "Meilleure compatibilité avec les thèmes Steam (comme Float) : icônes, surbrillance au focus, en-têtes de section et fonds"
+      ]
     }
   },
   "apps_view": {

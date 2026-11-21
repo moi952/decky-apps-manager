@@ -78,6 +78,14 @@
         "Simgesi olmayan uygulamalarda artık boşluk yerine yer tutucu görünüyor",
         "Bildirimler artık Apps Manager simgesini gösteriyor ve panel kapalıyken bile ulaşıyor"
       ]
+    },
+    "v0_6_0": {
+      "title": "0.6.0 sürümündeki yenilikler",
+      "items": [
+        "Ayarlarda Discord bağlantısı",
+        "Bildirim simgesinin köşeleri artık yuvarlatılmış değil",
+        "Steam temalarıyla (Float gibi) daha iyi uyumluluk: simgeler, odak vurgusu, bölüm başlıkları ve arka planlar"
+      ]
     }
   },
   "apps_view": {

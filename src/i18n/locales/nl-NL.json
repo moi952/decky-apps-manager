@@ -78,6 +78,14 @@
         "Apps zonder pictogram krijgen nu een tijdelijke afbeelding in plaats van een lege plek",
         "Meldingen tonen nu het pictogram van Apps Manager en komen ook aan als het paneel gesloten is"
       ]
+    },
+    "v0_6_0": {
+      "title": "Nieuw in 0.6.0",
+      "items": [
+        "Discord-link in de instellingen",
+        "Het meldingspictogram heeft geen afgeronde hoeken meer",
+        "Betere compatibiliteit met Steam-thema's (zoals Float): pictogrammen, focusmarkering, sectiekoppen en achtergronden"
+      ]
     }
   },
   "apps_view": {
