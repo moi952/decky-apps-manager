@@ -44,6 +44,7 @@ export const StatusCard: React.FC<StatusCardProps> = ({
   const colors = VARIANT_COLORS[variant];
   return (
     <div
+      className="dau-status-card"
       style={{
         display: "flex",
         flexDirection: "column",
@@ -75,6 +76,21 @@ export const StatusCard: React.FC<StatusCardProps> = ({
         </div>
       )}
       {children}
+      {/* The card has its own colours: its buttons keep a plain, theme-free look
+          (a theme restyling every DialogButton would add a grey fill and a ring). */}
+      <style>{`
+        .dau-status-card.dau-status-card button.dck-action-btn {
+          background: rgba(255, 255, 255, 0.08) !important;
+          border-radius: ${ROUNDNESS} !important;
+          box-shadow: none !important;
+        }
+        .dau-status-card.dau-status-card.dau-status-card button.dck-action-btn:focus,
+        .dau-status-card.dau-status-card.dau-status-card button.dck-action-btn.gpfocus,
+        .dau-status-card.dau-status-card.dau-status-card button.dck-action-btn:hover {
+          background: #dcdedf !important;
+          color: #0e141b !important;
+        }
+      `}</style>
     </div>
   );
 };

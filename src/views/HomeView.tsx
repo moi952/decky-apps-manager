@@ -11,10 +11,7 @@ import { AutoUpdateBanner } from "../components/AutoUpdateBanner";
 import { SearchField } from "../components/SearchField";
 import { LoadingIndicator } from "../components/LoadingIndicator";
 import { TopProgressBar } from "../components/TopProgressBar";
-import {
-  AppSectionHeader,
-  APP_SECTION_HEADER_STYLES,
-} from "../components/AppSectionHeader";
+import { AppSectionHeader } from "../components/AppSectionHeader";
 import { AppRow } from "../components/AppRow";
 import { useApps } from "../context/AppsContext";
 import { AppEntry } from "../types/apps";
@@ -81,7 +78,6 @@ export const HomeView: React.FC<HomeViewProps> = ({ onOpenApp, onOpenAllApps }) 
 
   return (
     <PanelSectionCustom>
-      <style>{APP_SECTION_HEADER_STYLES}</style>
 
       {backgroundLoading && (
         <div style={{ marginBottom: 8 }}>

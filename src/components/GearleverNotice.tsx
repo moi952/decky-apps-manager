@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Focusable } from "@decky/ui";
 import { call } from "@decky/api";
-import { ActionButton, StatusCard } from "@moi952/decky-ui-kit";
+import { ActionButton, StatusCard, ThemedSurface } from "@moi952/decky-ui-kit";
 import { useTranslation } from "react-i18next";
 
 import { useApps } from "../context/AppsContext";
@@ -133,13 +133,12 @@ export const GearleverNotice: React.FC<GearleverNoticeProps> = ({
                 100% { transform: translateX(350%); }
               }
             `}</style>
-            <div
+            <ThemedSurface
               style={{
                 width: "100%",
                 height: 4,
                 borderRadius: 2,
                 overflow: "hidden",
-                background: "rgba(255, 255, 255, 0.08)",
               }}
             >
               <div
@@ -150,7 +149,7 @@ export const GearleverNotice: React.FC<GearleverNoticeProps> = ({
                   animation: "gearlever-install-progress 1.1s ease-in-out infinite",
                 }}
               />
-            </div>
+            </ThemedSurface>
           </div>
         )}
         <Focusable

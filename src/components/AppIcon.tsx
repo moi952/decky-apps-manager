@@ -1,4 +1,5 @@
 import React from "react";
+import { ThemedSurface } from "@moi952/decky-ui-kit";
 import { FiBox, FiLayers } from "react-icons/fi";
 
 interface AppIconProps {
@@ -26,7 +27,7 @@ export const AppIcon: React.FC<AppIconProps> = ({ src, size, runtime }) => {
 
   const Glyph = runtime ? FiLayers : FiBox;
   return (
-    <div
+    <ThemedSurface
       style={{
         width: size ?? "100%",
         height: size ?? "100%",
@@ -35,11 +36,15 @@ export const AppIcon: React.FC<AppIconProps> = ({ src, size, runtime }) => {
         alignItems: "center",
         justifyContent: "center",
         borderRadius: 8,
-        background: "rgba(255, 255, 255, 0.08)",
-        color: "#9aa1a8",
       }}
     >
-      <Glyph size={size ? Math.round(size * 0.5) : 18} />
-    </div>
+      {/* Colour and fill on the icon itself: a theme recolours / fills every svg of a
+          focused button, which would turn this placeholder dark and solid. */}
+      <Glyph
+        size={size ? Math.round(size * 0.5) : 18}
+        color="#9aa1a8"
+        style={{ fill: "none" }}
+      />
+    </ThemedSurface>
   );
 };

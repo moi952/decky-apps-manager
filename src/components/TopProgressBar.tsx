@@ -1,16 +1,16 @@
 import React from "react";
+import { ThemedSurface } from "@moi952/decky-ui-kit";
 
 // Thin, indeterminate progress bar shown while a silent background
 // refresh is running (the panel already has cached data to show, so a
 // full-screen spinner would be overkill — this just says "still
 // checking" without blocking anything underneath it).
 export const TopProgressBar: React.FC = () => (
-  <div
+  <ThemedSurface
     style={{
       width: "100%",
       height: 2,
       overflow: "hidden",
-      background: "rgba(255, 255, 255, 0.08)",
     }}
   >
     <style>{`
@@ -27,5 +27,5 @@ export const TopProgressBar: React.FC = () => (
         animation: "dau-progress-slide 1.1s ease-in-out infinite",
       }}
     />
-  </div>
+  </ThemedSurface>
 );

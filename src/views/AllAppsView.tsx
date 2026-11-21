@@ -10,10 +10,7 @@ import { SearchField } from "../components/SearchField";
 import { LoadingIndicator } from "../components/LoadingIndicator";
 import { TopProgressBar } from "../components/TopProgressBar";
 import { AppRow } from "../components/AppRow";
-import {
-  AppSectionHeader,
-  APP_SECTION_HEADER_STYLES,
-} from "../components/AppSectionHeader";
+import { AppSectionHeader } from "../components/AppSectionHeader";
 import { useApps } from "../context/AppsContext";
 import { AppSortMode, sortApps } from "../utils/functions";
 import { consumeErrorFilterRequest } from "../utils/allAppsErrorFilterFocus";
@@ -155,7 +152,6 @@ export const AllAppsView: React.FC<AllAppsViewProps> = ({ onBack }) => {
 
   return (
     <PanelSectionCustom>
-      <style>{APP_SECTION_HEADER_STYLES}</style>
 
       {backgroundLoading && (
         <div style={{ marginBottom: 8 }}>
