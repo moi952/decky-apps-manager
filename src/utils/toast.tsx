@@ -73,9 +73,16 @@ function primePersona() {
     try {
       p.m_strPlayerName = APP_NAME;
     } catch {}
-    for (const k of ["avatar_url_small", "avatar_url_medium", "avatar_url_full"]) {
+    for (const k of [
+      "avatar_url_small",
+      "avatar_url_medium",
+      "avatar_url_full",
+    ]) {
       try {
-        Object.defineProperty(p, k, { get: () => ICON_DATA_URL, configurable: true });
+        Object.defineProperty(p, k, {
+          get: () => ICON_DATA_URL,
+          configurable: true,
+        });
       } catch {}
     }
     personaPrimed = true;
@@ -123,7 +130,8 @@ function verifyFirstToastRendered(resend: () => void) {
   }, 60);
 }
 
-const openQuickAccessMenu = () => Navigation.OpenQuickAccessMenu(QuickAccessTab.Decky);
+const openQuickAccessMenu = () =>
+  Navigation.OpenQuickAccessMenu(QuickAccessTab.Decky);
 
 export interface PluginToastData {
   title: string;
@@ -136,12 +144,20 @@ export const pluginToast = (data: PluginToastData) => {
     primePersona();
     // title is often just the app's own name already (t("section_label"))
     // — don't repeat it in the message body when it is.
-    const message = data.title && data.title !== APP_NAME ? `${data.title}: ${data.body}` : data.body;
+    const message =
+      data.title && data.title !== APP_NAME
+        ? `${data.title}: ${data.body}`
+        : data.body;
     const onClick = data.onClick ?? openQuickAccessMenu;
     const send = () =>
       SteamClient.ClientNotifications?.DisplayClientNotification?.(
         1,
-        JSON.stringify({ title: "", body: message, state: "active", steamid: SID64 }),
+        JSON.stringify({
+          title: "",
+          body: message,
+          state: "active",
+          steamid: SID64,
+        }),
         () => {
           try {
             onClick();
