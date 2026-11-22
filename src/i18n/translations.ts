@@ -82,6 +82,19 @@ export const LANGUAGE_NAMES: Record<string, string> = {
   "zh-CN": "简体中文",
 };
 
+// Map base language codes (e.g. "ru", "de") to their full locales ("ru-RU", "de-DE")
+// so that i18next with `load: "languageOnly"` resolves all registered locales instead of falling back to default.
+const fallbackLng: Record<string, string[]> = {
+  default: ["en-US"],
+};
+for (const locale of Object.keys(resources)) {
+  const lang = locale.split("-")[0];
+  if (!fallbackLng[lang]) {
+    fallbackLng[lang] = [];
+  }
+  fallbackLng[lang].push(locale);
+}
+
 export const loadTranslations = (savedLanguage?: string) => {
   // Use saved language if provided, otherwise use browser language.
   const initialLanguage =
@@ -92,11 +105,7 @@ export const loadTranslations = (savedLanguage?: string) => {
   i18n.use(initReactI18next).init({
     resources,
     lng: initialLanguage,
-    fallbackLng: {
-      fr: ["fr-FR"],
-      en: ["en-US"],
-      default: ["en-US"],
-    },
+    fallbackLng,
     load: "languageOnly",
     defaultNS: "common",
     ns: Object.keys(resources["en-US"]),
